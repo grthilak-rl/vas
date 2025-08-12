@@ -1,0 +1,288 @@
+version: '3.8'
+
+# ASRock Edge Computing Optimized Setup
+# This is the production configuration for ASRock iEP-7040E-024 units
+# Each unit handles exactly 6 cameras with local YOLO inference capability
+
+services:
+  # PostgreSQL for local edge data (optional, can connect to central DB)
+  edge-db:
+    image: postgres:13
+    container_name: edge-db-${UNIT_ID:-001}
+    environment:
+      POSTGRES_DB: vas_edge_${UNIT_ID:-001}
+      POSTGRES_USER: vas_user
+      POSTGRES_PASSWORD: vas_secure_password_2024
+    volumes:
+      - edge_db_data:/var/lib/postgresql/data
+      - ./vas/backend/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vas_user -d vas_edge_${UNIT_ID:-001}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for edge caching and session management
+  edge-redis:
+    image: redis:7-alpine
+    container_name: edge-redis-${UNIT_ID:-001}
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - edge_redis_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Janus Gateway optimized for ASRock (6 cameras max)
+  janus-edge:
+    image: canyan/janus-gateway:latest
+    container_name: janus-edge-${UNIT_ID:-001}
+    network_mode: host  # Optimal performance for edge deployment
+    volumes:
+      - ./janus/config/edge-janus.jcfg:/opt/janus/etc/janus/janus.jcfg:ro
+      - ./janus/config/janus.plugin.streaming.edge.jcfg:/opt/janus/etc/janus/janus.plugin.streaming.jcfg:ro
+      - ./recordings:/opt/janus/share/janus/recordings
+      - /dev/dri:/dev/dri  # Intel Arc GPU access for future hardware acceleration
+    environment:
+      - JANUS_UNIT_ID=${UNIT_ID:-001}
+      - JANUS_MAX_CAMERAS=6
+      - JANUS_CENTRAL_API=${CENTRAL_API_URL:-http://central-dashboard:8080}
+      - INTEL_GPU_ENABLED=true
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'      # 4 cores dedicated to Janus (25% of ASRock CPU)
+          memory: 6G       # 6GB RAM for stream processing
+        reservations:
+          cpus: '2.0'      # Minimum 2 cores guaranteed
+          memory: 3G       # Minimum 3GB RAM
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/janus/info"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # VAS Backend optimized for edge deployment
+  vas-backend-edge:
+    build: 
+      context: ./vas/backend
+      dockerfile: Dockerfile
+    container_name: vas-backend-edge-${UNIT_ID:-001}
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://vas_user:vas_secure_password_2024@edge-db:5432/vas_edge_${UNIT_ID:-001}
+      - REDIS_URL=redis://edge-redis:6379
+      - JANUS_HTTP_URL=http://localhost:8088
+      - JANUS_ADMIN_URL=http://localhost:7088/admin
+      - JANUS_WS_URL=ws://localhost:8188
+      - UNIT_ID=${UNIT_ID:-001}
+      - MAX_CAMERAS=6
+      - CENTRAL_DASHBOARD_URL=${CENTRAL_API_URL:-http://central-dashboard:8080}
+      - EDGE_MODE=true
+    volumes:
+      - ./recordings:/app/recordings:ro
+    depends_on:
+      edge-db:
+        condition: service_healthy
+      edge-redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'      # 2 cores for backend API
+          memory: 3G       # 3GB RAM
+        reservations:
+          cpus: '1.0'      # Minimum 1 core
+          memory: 1.5G     # Minimum 1.5GB RAM
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # VAS Frontend optimized for edge
+  vas-frontend-edge:
+    build:
+      context: ./vas/frontend
+      dockerfile: Dockerfile
+    container_name: vas-frontend-edge-${UNIT_ID:-001}
+    ports:
+      - "3002:3000"  # Expose frontend for testing
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8000
+      - REACT_APP_JANUS_WS_URL=ws://localhost:8188
+      - REACT_APP_UNIT_ID=${UNIT_ID:-001}
+      - REACT_APP_MAX_CAMERAS=6
+      - REACT_APP_EDGE_MODE=true
+    depends_on:
+      - vas-backend-edge
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+
+  # Nginx reverse proxy optimized for edge
+  nginx-edge:
+    image: nginx:alpine
+    container_name: nginx-edge-${UNIT_ID:-001}
+    ports:
+      - "80:80"
+      - "443:443"  # HTTPS ready for production
+    volumes:
+      - ./nginx-edge.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # SSL certificates for production
+      - vas_frontend_dist:/usr/share/nginx/html
+    depends_on:
+      - vas-backend-edge
+      - vas-frontend-edge
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Edge API for unit management and central reporting
+  edge-api:
+    build:
+      context: ./edge-api
+      dockerfile: Dockerfile
+    container_name: edge-api-${UNIT_ID:-001}
+    ports:
+      - "3001:3001"  # Different port to avoid conflicts
+    environment:
+      - UNIT_ID=${UNIT_ID:-001}
+      - MAX_CAMERAS=6
+      - JANUS_HTTP_URL=http://localhost:8088
+      - JANUS_ADMIN_URL=http://localhost:7088/admin
+      - VAS_BACKEND_URL=http://vas-backend-edge:8000
+      - CENTRAL_DASHBOARD_URL=${CENTRAL_API_URL:-http://central-dashboard:8080}
+      - REPORT_INTERVAL=30  # Report to central every 30 seconds
+      - INTEL_ARC_ENABLED=true
+    volumes:
+      - ./recordings:/app/recordings:ro
+      - /sys/class/drm:/sys/class/drm:ro  # GPU monitoring
+    depends_on:
+      - vas-backend-edge
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Future: YOLO Inference Service (Intel Arc optimized)
+  yolo-inference:
+    image: intel/openvino:2024.0.0-dev  # Intel OpenVINO for Arc GPU
+    container_name: yolo-inference-${UNIT_ID:-001}
+    volumes:
+      - ./ai-models:/app/models:ro
+      - ./ai-inference:/app:ro
+      - /dev/dri:/dev/dri  # Intel Arc GPU access
+    environment:
+      - INTEL_GPU_ENABLED=true
+      - MAX_CAMERAS=6
+      - INFERENCE_MODEL=yolov8n  # Start with nano model for testing
+      - INFERENCE_RESOLUTION=1080p
+      - INFERENCE_FPS=30
+      - UNIT_ID=${UNIT_ID:-001}
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'      # 4 cores for YOLO preprocessing
+          memory: 4G       # 4GB for model weights + inference
+        reservations:
+          cpus: '2.0'
+          memory: 2G
+    devices:
+      - /dev/dri:/dev/dri  # Intel Arc GPU access
+
+    restart: unless-stopped
+    profiles:
+      - ai-enabled  # Only start when AI is needed: docker-compose --profile ai-enabled up
+    healthcheck:
+      test: ["CMD", "python", "/app/health_check.py"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # System monitoring for performance optimization
+  edge-monitor:
+    image: prom/node-exporter:latest
+    container_name: edge-monitor-${UNIT_ID:-001}
+    network_mode: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /dev/dri:/host/dev/dri:ro  # GPU monitoring
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--web.listen-address=:9100'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    restart: unless-stopped
+
+volumes:
+  edge_db_data:
+    name: edge_db_data_${UNIT_ID:-001}
+  edge_redis_data:
+    name: edge_redis_data_${UNIT_ID:-001}
+  vas_frontend_dist:
+    name: vas_frontend_dist_${UNIT_ID:-001}
+
+networks:
+  default:
+    name: edge_network_${UNIT_ID:-001}
+    driver: bridge

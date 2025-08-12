@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Camera Test - Janus WebRTC</title>
+    <script src="adapter.js"></script>
+    <script src="janus.js"></script>
+</head>
+<body>
+    <h1>🎥 Direct Camera Test - RTSP→WebRTC</h1>
+    <div>
+        <button id="startBtn1">📹 Start Camera 1 (Office)</button>
+        <button id="startBtn2">📹 Start Camera 2 (Lobby)</button>
+        <button id="stopBtn">⏹️ Stop Stream</button>
+    </div>
+    <br>
+    <video id="videoElement" width="640" height="480" autoplay muted controls></video>
+    <div id="status">Ready to stream...</div>
+
+    <script>
+        let janus = null;
+        let streaming = null;
+        const videoElement = document.getElementById('videoElement');
+        const statusDiv = document.getElementById('status');
+
+        // Check if Janus is loaded  
+        setTimeout(function() {
+            if (typeof Janus === 'undefined') {
+                statusDiv.textContent = "❌ Janus library failed to load. Check internet connection.";
+                console.error("❌ Janus library not loaded");
+                return;
+            }
+            initializeJanus();
+        }, 1000);
+
+        function initializeJanus() {
+
+        // Initialize Janus
+        Janus.init({
+            debug: "all",
+            callback: function() {
+                console.log("Janus initialized");
+                statusDiv.textContent = "✅ Janus ready - WebSocket connecting...";
+                
+                janus = new Janus({
+                    server: 'ws://localhost:8188',
+                    success: function() {
+                        console.log("✅ Connected to Janus WebSocket");
+                        statusDiv.textContent = "✅ Connected to Janus - Ready to stream!";
+                    },
+                    error: function(error) {
+                        console.error("❌ Janus connection error:", error);
+                        statusDiv.textContent = "❌ Failed to connect to Janus: " + error;
+                    },
+                    destroyed: function() {
+                        console.log("Janus destroyed");
+                        statusDiv.textContent = "Janus connection closed";
+                    }
+                });
+            },
+            error: function(error) {
+                console.error("❌ Janus initialization error:", error);
+                statusDiv.textContent = "❌ Janus initialization failed: " + error;
+            }
+        });
+        }
+
+        function startStream(streamId, cameraName) {
+            if (!janus) {
+                statusDiv.textContent = "❌ Janus not connected";
+                return;
+            }
+
+            statusDiv.textContent = `🔄 Starting ${cameraName}...`;
+
+            janus.attach({
+                plugin: "janus.plugin.streaming",
+                success: function(pluginHandle) {
+                    streaming = pluginHandle;
+                    console.log(`✅ Attached to streaming plugin for ${cameraName}`);
+                    
+                    // Watch the stream
+                    streaming.send({
+                        message: { request: "watch", id: streamId },
+                        success: function(result) {
+                            console.log(`✅ Watch request successful for ${cameraName}:`, result);
+                            statusDiv.textContent = `📡 Receiving ${cameraName} stream...`;
+                        },
+                        error: function(error) {
+                            console.error(`❌ Watch request failed for ${cameraName}:`, error);
+                            statusDiv.textContent = `❌ Failed to watch ${cameraName}: ` + JSON.stringify(error);
+                        }
+                    });
+                },
+                error: function(error) {
+                    console.error(`❌ Plugin attach failed for ${cameraName}:`, error);
+                    statusDiv.textContent = `❌ Plugin attach failed for ${cameraName}: ` + error;
+                },
+                onmessage: function(msg, jsep) {
+                    console.log(`📨 Message from ${cameraName}:`, msg);
+                    
+                    if (jsep) {
+                        console.log(`🎬 SDP offer received for ${cameraName}:`, jsep);
+                        statusDiv.textContent = `🎬 Processing video for ${cameraName}...`;
+                        
+                        streaming.createAnswer({
+                            jsep: jsep,
+                            tracks: [
+                                { type: "video", capture: false, recv: true }
+                            ],
+                            success: function(jsep) {
+                                console.log(`✅ SDP answer created for ${cameraName}:`, jsep);
+                                streaming.send({ 
+                                    message: { request: "start" }, 
+                                    jsep: jsep,
+                                    success: function() {
+                                        console.log(`🚀 Stream started for ${cameraName}`);
+                                        statusDiv.textContent = `🚀 ${cameraName} streaming!`;
+                                    }
+                                });
+                            },
+                            error: function(error) {
+                                console.error(`❌ Answer creation failed for ${cameraName}:`, error);
+                                statusDiv.textContent = `❌ Video setup failed for ${cameraName}: ` + error;
+                            }
+                        });
+                    }
+                },
+                onremotetrack: function(track, mid, added) {
+                    console.log(`🎥 Remote track event for ${cameraName}:`, { track, mid, added });
+                    
+                    if (added && track.kind === 'video') {
+                        console.log(`📹 Adding video track for ${cameraName}`);
+                        const stream = new MediaStream([track]);
+                        videoElement.srcObject = stream;
+                        
+                        // Debounce play attempts to avoid AbortError
+                        if (videoElement.playTimeout) {
+                            clearTimeout(videoElement.playTimeout);
+                        }
+                        videoElement.playTimeout = setTimeout(() => {
+                            if (videoElement.srcObject) {
+                                videoElement.play().then(() => {
+                                    console.log(`🎉 Video playing for ${cameraName}!`);
+                                    statusDiv.textContent = `🎉 LIVE: ${cameraName} - H.264 RTSP→WebRTC!`;
+                                }).catch((error) => {
+                                    // Only log non-abort errors
+                                    if (error.name !== 'AbortError') {
+                                        console.error(`❌ Video play failed for ${cameraName}:`, error);
+                                        statusDiv.textContent = `❌ Video play failed for ${cameraName}: ` + error;
+                                    }
+                                });
+                            }
+                        }, 100); // 100ms debounce
+                    }
+                },
+                oncleanup: function() {
+                    console.log(`🧹 Cleanup for ${cameraName}`);
+                    videoElement.srcObject = null;
+                    statusDiv.textContent = "Stopped";
+                }
+            });
+        }
+
+        function stopStream() {
+            if (streaming) {
+                streaming.send({ message: { request: "stop" } });
+                streaming.detach();
+                streaming = null;
+            }
+            videoElement.srcObject = null;
+            statusDiv.textContent = "⏹️ Stream stopped";
+        }
+
+        // Button events
+        document.getElementById('startBtn1').onclick = () => startStream(1, "Camera 1 - Office");
+        document.getElementById('startBtn2').onclick = () => startStream(2, "Camera 2 - Lobby");  
+        document.getElementById('stopBtn').onclick = stopStream;
+    </script>
+</body>
+</html>

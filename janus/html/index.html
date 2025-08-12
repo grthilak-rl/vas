@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #video { width: 100%; max-width: 800px; height: auto; border: 2px solid #ccc; }
+        #status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .controls { margin: 20px 0; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+        .debug { margin-top: 20px; padding: 10px; background-color: #f8f9fa; border: 1px solid #dee2e6; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>RTSP Camera Viewer</h1>
+    <div id="status">Initializing...</div>
+    
+    <div class="controls">
+        <button id="startBtn" disabled>Start WebRTC Stream</button>
+        <button id="stopBtn" disabled>Stop Stream</button>
+        <button id="testNetworkBtn">Test Network Connectivity</button>
+        <button id="tryDirectBtn">Try TURN on Port 443</button>
+    </div>
+    
+    <video id="video" autoplay muted controls></video>
+    
+    <div class="debug">
+        <h3>Debug Information:</h3>
+        <div id="debugLog"></div>
+    </div>
+
+    <!-- Load local JavaScript files -->
+    <script src="js/adapter.min.js"></script>
+    <script src="js/janus.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let janus = null;
+            let pluginHandle = null;
+            const janusServer = "ws://" + window.location.hostname + ":8188/janus";
+            
+            function log(message) {
+                console.log(message);
+                const debugLog = document.getElementById('debugLog');
+                debugLog.innerHTML += new Date().toLocaleTimeString() + ": " + message + "<br>";
+                debugLog.scrollTop = debugLog.scrollHeight;
+            }
+            
+            function initJanus() {
+                log("Initializing Janus...");
+                Janus.init({
+                    debug: true,
+                    callback: function() {
+                        log("Janus initialized successfully");
+                        janus = new Janus({
+                            server: janusServer,
+                            iceServers: [
+                                {urls: "turn:global.turn.expressturn.com:3478", username: "ef8H9F2Z8VKB1B5D44", credential: "lJDdebkP8VlNnPme"},
+                                {urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject"},
+                                {urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject"},
+                                {urls: "stun:stun.l.google.com:19302"}
+                            ],
+                            iceTransportPolicy: "all",
+                            success: function() {
+                                log("Connected to Janus server");
+                                document.getElementById('status').textContent = "Connected to Janus";
+                                document.getElementById('status').className = "connected";
+                                document.getElementById('startBtn').disabled = false;
+                            },
+                            error: function(error) {
+                                log("Error connecting to Janus: " + error);
+                                document.getElementById('status').textContent = "Error connecting to Janus: " + error;
+                                document.getElementById('status').className = "error";
+                            }
+                        });
+                    },
+                    error: function(error) {
+                        log("Error initializing Janus: " + error);
+                        document.getElementById('status').textContent = "Error initializing Janus: " + error;
+                        document.getElementById('status').className = "error";
+                    }
+                });
+            }
+            
+            document.getElementById('startBtn').onclick = function() {
+                log("Starting WebRTC stream...");
+                document.getElementById('status').textContent = "Starting stream...";
+                document.getElementById('startBtn').disabled = true;
+                
+                janus.attach({
+                    plugin: "janus.plugin.streaming",
+                    success: function(handle) {
+                        log("Successfully attached to streaming plugin");
+                        pluginHandle = handle;
+                        pluginHandle.send({ message: { request: "watch", id: 1 } });
+                    },
+                    error: function(error) {
+                        log("Error attaching to streaming plugin: " + error);
+                        document.getElementById('status').textContent = "Error attaching to streaming plugin: " + error;
+                        document.getElementById('status').className = "error";
+                        document.getElementById('startBtn').disabled = false;
+                    },
+                    onmessage: function(msg, jsep) {
+                        log("Message from plugin: " + JSON.stringify(msg));
+                        if(jsep) {
+                            log("Handling remote JSEP: " + jsep.type);
+                            pluginHandle.createAnswer({
+                                jsep: jsep,
+                                media: { audioSend: false, videoSend: false, audioRecv: true, videoRecv: true },
+                                success: function(answer) {
+                                    log("Created answer successfully");
+                                    pluginHandle.send({
+                                        message: { request: "start" },
+                                        jsep: answer
+                                    });
+                                },
+                                error: function(error) {
+                                    log("WebRTC error: " + error);
+                                    document.getElementById('status').textContent = "WebRTC error: " + error;
+                                    document.getElementById('status').className = "error";
+                                    document.getElementById('startBtn').disabled = false;
+                                }
+                            });
+                        }
+                        if(msg.result && msg.result.status === "playing") {
+                            log("Stream is now playing!");
+                            document.getElementById('status').textContent = "Stream is live!";
+                            document.getElementById('status').className = "connected";
+                            document.getElementById('stopBtn').disabled = false;
+                        }
+                    },
+                    onremotetrack: function(track, mid, added, metadata) {
+                        log("Remote track event: " + track.kind + ", added: " + added);
+                        if(added && track.kind === 'video') {
+                            log("Adding video track to video element");
+                            const video = document.getElementById('video');
+                            const stream = new MediaStream([track]);
+                            Janus.attachMediaStream(video, stream);
+                        }
+                    },
+                    oncleanup: function() {
+                        log("Plugin cleanup");
+                        document.getElementById('video').srcObject = null;
+                    }
+                });
+            };
+            
+            document.getElementById('stopBtn').onclick = function() {
+                if(pluginHandle) {
+                    pluginHandle.hangup();
+                }
+                document.getElementById('video').srcObject = null;
+                document.getElementById('status').textContent = "Stream stopped";
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                log("Stream stopped");
+            };
+            
+            document.getElementById('testNetworkBtn').onclick = function() {
+                log("Testing network connectivity...");
+                
+                // Test TURN server connectivity with multiple servers
+                const turnServers = [
+                    {urls: "turn:global.turn.expressturn.com:3478", username: "ef8H9F2Z8VKB1B5D44", credential: "lJDdebkP8VlNnPme"},
+                    {urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject"},
+                    {urls: "stun:stun.l.google.com:19302"}
+                ];
+                
+                const pc = new RTCPeerConnection({
+                    iceServers: turnServers,
+                    iceTransportPolicy: "all"
+                });
+                
+                let candidateCount = 0;
+                pc.onicecandidate = function(event) {
+                    if (event.candidate) {
+                        candidateCount++;
+                        const candidate = event.candidate.candidate;
+                        if (candidate.includes('typ relay')) {
+                            log("✓ TURN relay candidate found: " + candidate);
+                        } else if (candidate.includes('typ srflx')) {
+                            log("✓ STUN reflexive candidate found: " + candidate);
+                        } else if (candidate.includes('typ host')) {
+                            log("✓ Host candidate found: " + candidate);
+                        } else {
+                            log("✓ Other candidate found: " + candidate);
+                        }
+                    } else {
+                        log("ICE gathering complete. Found " + candidateCount + " candidates total.");
+                        pc.close();
+                    }
+                };
+                pc.createDataChannel("test");
+                pc.createOffer().then(offer => pc.setLocalDescription(offer));
+                
+                // Test basic WebSocket connection (but don't fail if this doesn't work)
+                try {
+                    const ws = new WebSocket(janusServer);
+                    ws.onopen = function() {
+                        log("✓ WebSocket test connection successful");
+                        ws.close();
+                    };
+                    ws.onerror = function() {
+                        log("Note: WebSocket test failed, but main connection works");
+                    };
+                } catch(e) {
+                    log("Note: WebSocket test error (this may be normal): " + e.message);
+                }
+            };
+            
+            document.getElementById('tryDirectBtn').onclick = function() {
+                log("Attempting WebRTC with TURN over TLS (port 443)...");
+                document.getElementById('status').textContent = "Trying TURN over TLS...";
+                
+                // Stop current stream if any
+                if(pluginHandle) {
+                    pluginHandle.hangup();
+                }
+                document.getElementById('video').srcObject = null;
+                
+                // Reinitialize Janus with TURN over TLS on port 443
+                if(janus) {
+                    janus.destroy();
+                }
+                
+                janus = new Janus({
+                    server: janusServer,
+                    iceServers: [
+                        {urls: "turns:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject"},
+                        {urls: "stun:stun.l.google.com:19302"}
+                    ],
+                    iceTransportPolicy: "all",
+                    success: function() {
+                        log("✓ Connected to Janus with TURN over TLS");
+                        document.getElementById('status').textContent = "Connected with TURN over TLS";
+                        document.getElementById('status').className = "connected";
+                        
+                        // Automatically start streaming
+                        document.getElementById('startBtn').click();
+                    },
+                    error: function(error) {
+                        log("✗ Failed to connect with TURN over TLS: " + error);
+                        document.getElementById('status').textContent = "TURN over TLS failed: " + error;
+                        document.getElementById('status').className = "error";
+                    }
+                });
+            };
+            
+            // Initialize Janus
+            initJanus();
+        });
+    </script>
+</body>
+</html>
