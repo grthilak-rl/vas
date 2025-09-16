@@ -7,9 +7,11 @@ to ensure consistency across different services.
 # Static mapping of device IDs to their corresponding Janus proxy mountpoint IDs
 # This MUST be kept in sync with the configuration in janus/janus.plugin.streaming.jcfg
 DEVICE_TO_MOUNTPOINT_MAP = {
-    "739788de-c89f-41c2-b63e-a0f843af6b00": 10001,  # Live Camera 1
-    "407efe14-df4c-4aa1-aa45-cc6312695aee": 10002,  # Live Camera 2
-    "f00f00f0-f00f-f00f-f00f-f00f00f00f00": 10003,  # Test Camera
+    "739788de-c89f-41c2-b63e-a0f843af6b00": 1,  # Live Camera 1
+    "407efe14-df4c-4aa1-aa45-cc6312695aee": 2,  # Live Camera 2
+    "f00f00f0-f00f-f00f-f00f-f00f00f00f00": 3,  # Test Camera
+    "05a9a734-f76d-4f45-9b0e-1e9c89b43e2c": 1,  # Test Camera 1 (from database) -> Stream 1
+    "df5ec5a5-f3f2-4672-971b-b5df48fc9a05": 2,  # Test Camera 2 (from database) -> Stream 2
 }
 
 # Standard devices to populate in the database
