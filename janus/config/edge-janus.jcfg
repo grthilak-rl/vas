@@ -163,7 +163,7 @@ events: {
     // janus.eventhandler.edge_reporter: {
     //     enabled = true
     //     central_api_url = "${CENTRAL_API_URL}"
-    //     unit_id = "${UNIT_ID}"
+    //     unit_id = "001"
     //     report_interval = 30       // Report every 30 seconds
     // }
 }
@@ -173,7 +173,7 @@ loggers: {
     janus.logger.jsonlog: {
         enabled = true
         path = "/opt/janus/share/janus/logs"
-        filename = "janus-edge-${UNIT_ID}.json"
+        filename = "janus-edge-001.json"
         
         // Log rotation for edge storage management
         max_size = "100MB"

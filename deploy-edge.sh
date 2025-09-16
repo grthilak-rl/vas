@@ -133,6 +133,7 @@ create_directories() {
         "ai-inference"
         "logs"
         "backups"
+        "frontend-dist"
     )
     
     for dir in "${directories[@]}"; do
@@ -170,6 +171,312 @@ update_camera_config() {
     success "Camera configuration updated"
 }
 
+# Setup frontend without Docker
+setup_frontend() {
+    log "Setting up frontend for direct serving..."
+    
+    # Check if frontend source exists
+    if [ ! -d "vas/frontend" ] || [ -z "$(ls -A vas/frontend)" ]; then
+        warning "Frontend directory is empty or doesn't exist. Creating a basic frontend..."
+        
+        # Create a basic HTML frontend for testing
+        cat > frontend-dist/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAS Edge Unit Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+        .camera-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .camera-card {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            background: white;
+        }
+        .status-online { border-left-color: #28a745; }
+        .status-offline { border-left-color: #dc3545; }
+        .status-warning { border-left-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>VAS Edge Unit Dashboard</h1>
+            <p>Unit ID: <span id="unit-id">Loading...</span> | Max Cameras: <span id="max-cameras">Loading...</span></p>
+        </div>
+        
+        <div class="status-grid">
+            <div class="status-card status-online">
+                <h3>System Status</h3>
+                <p><strong>Status:</strong> Online</p>
+                <p><strong>Uptime:</strong> <span id="uptime">Loading...</span></p>
+            </div>
+            <div class="status-card status-online">
+                <h3>Backend API</h3>
+                <p><strong>Status:</strong> Connected</p>
+                <p><strong>URL:</strong> http://localhost:8000</p>
+            </div>
+            <div class="status-card status-online">
+                <h3>Janus Gateway</h3>
+                <p><strong>Status:</strong> Active</p>
+                <p><strong>Streams:</strong> <span id="active-streams">0</span>/6</p>
+            </div>
+        </div>
+        
+        <h2>Camera Streams</h2>
+        <div class="camera-grid" id="camera-grid">
+            <!-- Camera cards will be populated by JavaScript -->
+        </div>
+        
+        <div style="margin-top: 30px; text-align: center; color: #666;">
+            <p>VAS Edge Computing System - Development Mode</p>
+            <p>Frontend served directly without Docker container</p>
+        </div>
+    </div>
+
+    <script>
+        // Set unit information
+        document.getElementById('unit-id').textContent = '001'; // This would be dynamic
+        document.getElementById('max-cameras').textContent = '6';
+        
+        // Create camera cards
+        const cameraGrid = document.getElementById('camera-grid');
+        for (let i = 1; i <= 6; i++) {
+            const cameraCard = document.createElement('div');
+            cameraCard.className = 'camera-card';
+            cameraCard.innerHTML = `
+                <h4>Camera ${i}</h4>
+                <p>Status: <span class="status-offline">Offline</span></p>
+                <p>Stream URL: <br><small>http://localhost/streams/${i}</small></p>
+            `;
+            cameraGrid.appendChild(cameraCard);
+        }
+        
+        // Update uptime (simplified)
+        document.getElementById('uptime').textContent = 'Just started';
+        
+        // Check backend API status
+        fetch('http://localhost:8000/health')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Backend API is healthy:', data);
+            })
+            .catch(error => {
+                console.log('Backend API not yet available:', error);
+            });
+    </script>
+</body>
+</html>
+EOF
+        
+        success "Basic frontend created in frontend-dist/"
+    else
+        log "Frontend source found. Building frontend..."
+        
+        # Check if Node.js is available
+        if command -v npm &> /dev/null; then
+            cd vas/frontend
+            
+            # Install dependencies if package.json exists
+            if [ -f "package.json" ]; then
+                log "Installing frontend dependencies..."
+                npm install
+                
+                # Build the frontend
+                log "Building frontend..."
+                npm run build
+                
+                # Copy build output to frontend-dist
+                if [ -d "build" ]; then
+                    cp -r build/* ../../frontend-dist/
+                elif [ -d "dist" ]; then
+                    cp -r dist/* ../../frontend-dist/
+                else
+                    warning "No build output directory found. Using source files directly."
+                    cp -r . ../../frontend-dist/
+                fi
+                
+                cd ../..
+                success "Frontend built and copied to frontend-dist/"
+            else
+                warning "No package.json found. Copying source files directly."
+                cp -r vas/frontend/* frontend-dist/
+                success "Frontend source copied to frontend-dist/"
+            fi
+        else
+            warning "Node.js/npm not available. Creating basic frontend instead."
+            # Use the same basic HTML as above
+            cat > frontend-dist/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAS Edge Unit Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+        .camera-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .camera-card {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            background: white;
+        }
+        .status-online { border-left-color: #28a745; }
+        .status-offline { border-left-color: #dc3545; }
+        .status-warning { border-left-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>VAS Edge Unit Dashboard</h1>
+            <p>Unit ID: <span id="unit-id">Loading...</span> | Max Cameras: <span id="max-cameras">Loading...</span></p>
+        </div>
+        
+        <div class="status-grid">
+            <div class="status-card status-online">
+                <h3>System Status</h3>
+                <p><strong>Status:</strong> Online</p>
+                <p><strong>Uptime:</strong> <span id="uptime">Loading...</span></p>
+            </div>
+            <div class="status-card status-online">
+                <h3>Backend API</h3>
+                <p><strong>Status:</strong> Connected</p>
+                <p><strong>URL:</strong> http://localhost:8000</p>
+            </div>
+            <div class="status-card status-online">
+                <h3>Janus Gateway</h3>
+                <p><strong>Status:</strong> Active</p>
+                <p><strong>Streams:</strong> <span id="active-streams">0</span>/6</p>
+            </div>
+        </div>
+        
+        <h2>Camera Streams</h2>
+        <div class="camera-grid" id="camera-grid">
+            <!-- Camera cards will be populated by JavaScript -->
+        </div>
+        
+        <div style="margin-top: 30px; text-align: center; color: #666;">
+            <p>VAS Edge Computing System - Development Mode</p>
+            <p>Frontend served directly without Docker container</p>
+        </div>
+    </div>
+
+    <script>
+        // Set unit information
+        document.getElementById('unit-id').textContent = '001'; // This would be dynamic
+        document.getElementById('max-cameras').textContent = '6';
+        
+        // Create camera cards
+        const cameraGrid = document.getElementById('camera-grid');
+        for (let i = 1; i <= 6; i++) {
+            const cameraCard = document.createElement('div');
+            cameraCard.className = 'camera-card';
+            cameraCard.innerHTML = `
+                <h4>Camera ${i}</h4>
+                <p>Status: <span class="status-offline">Offline</span></p>
+                <p>Stream URL: <br><small>http://localhost/streams/${i}</small></p>
+            `;
+            cameraGrid.appendChild(cameraCard);
+        }
+        
+        // Update uptime (simplified)
+        document.getElementById('uptime').textContent = 'Just started';
+        
+        // Check backend API status
+        fetch('http://localhost:8000/health')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Backend API is healthy:', data);
+            })
+            .catch(error => {
+                console.log('Backend API not yet available:', error);
+            });
+    </script>
+</body>
+</html>
+EOF
+            success "Basic frontend created in frontend-dist/"
+        fi
+    fi
+}
+
 # Deploy the edge stack
 deploy_stack() {
     log "Deploying ASRock edge stack..."
@@ -190,7 +497,7 @@ deploy_stack() {
 wait_for_services() {
     log "Waiting for services to become healthy..."
     
-    services=("edge-db" "edge-redis" "janus-edge" "vas-backend-edge")
+    services=("edge-db" "edge-redis" "janus-edge" "vas-backend-edge" "nginx-edge")
     max_wait=300  # 5 minutes
     wait_time=0
     
@@ -315,6 +622,7 @@ main() {
         create_directories
         generate_ssl_certificates
         update_camera_config
+        setup_frontend
     fi
     
     deploy_stack

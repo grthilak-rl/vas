@@ -31,9 +31,9 @@ stream-1: {
     audio = false                     // Disable audio for performance
     
     // RTSP configuration (customize for your cameras)
-    url = "rtsp://root:G3M13m0b@172.16.16.122/live1s1.sdp"
-    rtsp_user = "root"
-    rtsp_pwd = "G3M13m0b"
+    url = "rtsp://172.16.16.122:554/stream"
+    rtsp_user = ""
+    rtsp_pwd = ""
     rtsp_authmethod = "digest"
     rtsp_timeout = 10                 // 10s RTSP timeout for edge reliability
     
@@ -49,7 +49,7 @@ stream-1: {
     keyframe_interval = 2000         // 2s keyframe interval for seeking
     
     // Metadata for central dashboard
-    metadata = "Unit-${UNIT_ID} Camera 1 - Office/Entrance"
+    metadata = "Unit-001 Camera 1 - Office/Entrance"
     
     // Edge-specific settings
     enabled = true
@@ -64,9 +64,9 @@ stream-2: {
     video = true
     audio = false
     
-    url = "rtsp://root:G3M13m0b@172.16.16.123/live1s1.sdp"
-    rtsp_user = "root"
-    rtsp_pwd = "G3M13m0b"
+    url = "rtsp://172.16.16.123:554/stream"
+    rtsp_user = ""
+    rtsp_pwd = ""
     rtsp_authmethod = "digest"
     rtsp_timeout = 10
     
@@ -78,7 +78,7 @@ stream-2: {
     
     video_buffer_size = 500
     keyframe_interval = 2000
-    metadata = "Unit-${UNIT_ID} Camera 2 - Lobby/Reception"
+    metadata = "Unit-001 Camera 2 - Lobby/Reception"
     
     enabled = true
     secret = ""
@@ -106,7 +106,7 @@ stream-3: {
     
     video_buffer_size = 500
     keyframe_interval = 2000
-    metadata = "Unit-${UNIT_ID} Camera 3 - Parking/Exterior"
+    metadata = "Unit-001 Camera 3 - Parking/Exterior"
     
     enabled = true
     secret = ""
@@ -134,7 +134,7 @@ stream-4: {
     
     video_buffer_size = 500
     keyframe_interval = 2000
-    metadata = "Unit-${UNIT_ID} Camera 4 - Warehouse/Storage"
+    metadata = "Unit-001 Camera 4 - Warehouse/Storage"
     
     enabled = true
     secret = ""
@@ -162,7 +162,7 @@ stream-5: {
     
     video_buffer_size = 500
     keyframe_interval = 2000
-    metadata = "Unit-${UNIT_ID} Camera 5 - Production/Workshop"
+    metadata = "Unit-001 Camera 5 - Production/Workshop"
     
     enabled = true
     secret = ""
@@ -190,7 +190,7 @@ stream-6: {
     
     video_buffer_size = 500
     keyframe_interval = 2000
-    metadata = "Unit-${UNIT_ID} Camera 6 - Security/Perimeter"
+    metadata = "Unit-001 Camera 6 - Security/Perimeter"
     
     enabled = true
     secret = ""
@@ -220,7 +220,7 @@ stream-7: {
     
     video_buffer_size = 500
     keyframe_interval = 2000
-    metadata = "Unit-${UNIT_ID} Camera 7 - Additional"
+    metadata = "Unit-001 Camera 7 - Additional"
     
     enabled = false  // Disabled - only enable if you have 7+ cameras
     secret = ""
