@@ -1,0 +1,228 @@
+// Janus Streaming Plugin Configuration - ASRock Edge Optimized
+// Configured for exactly 6 cameras per ASRock unit
+// Camera IP range: 172.16.16.122-127 (customize for your network)
+
+general: {
+    enabled = true
+    debug_level = 7                   // Maximum debug for troubleshooting
+    
+    // Edge deployment settings
+    admin_key = ""                    // No admin key for edge simplicity
+    threads = 4                       // 4 threads optimal for 6 streams on 16-core CPU
+    
+    // Performance optimization for ASRock
+    rtp_port_range = "20000-20050"   // Dedicated port range for RTP
+    rtcp_port_range = "25000-25050"  // Dedicated port range for RTCP
+    
+    // Buffer optimization for Intel Arc + YOLO processing
+    buffer_size = 1000               // 1000ms buffer for AI processing pipeline
+    prebuffer_count = 50             // Prebuffer 50 packets for smooth playback
+    
+    // Network optimization for edge deployment  
+    dscp = 46                        // QoS marking for video traffic
+}
+
+// Camera Stream 1 - Office/Entrance
+stream-1: {
+    type = "rtsp"
+    id = 1
+    description = "Edge Camera 1 - Office"
+    video = true
+    audio = false                     // Disable audio for performance
+    
+    // RTSP configuration (customize for your cameras)
+    url = "rtsp://root:G3M13m0b@172.16.16.122/live1s1.sdp"
+    rtsp_user = "root"
+    rtsp_pwd = "G3M13m0b"
+    rtsp_authmethod = "digest"
+    rtsp_timeout = 10                 // 10s RTSP timeout for edge reliability
+    
+    // Video encoding optimization for Intel Arc
+    videopt = 96                      // H.264 payload type
+    videocodec = "h264"
+    videoport = 20000                 // Dedicated port for this stream
+    videortpmap = "H264/90000"
+    videofmtp = "profile-level-id=42e01e;packetization-mode=1"
+    
+    // Performance settings for YOLO integration
+    video_buffer_size = 500          // 500ms video buffer for AI processing
+    keyframe_interval = 2000         // 2s keyframe interval for seeking
+    
+    // Metadata for central dashboard
+    metadata = "Unit-001 Camera 1 - Office/Entrance"
+    
+    // Edge-specific settings
+    enabled = true
+    secret = ""                      // No secret for edge simplicity
+}
+
+// Camera Stream 2 - Lobby/Reception
+stream-2: {
+    type = "rtsp"
+    id = 2
+    description = "Edge Camera 2 - Lobby" 
+    video = true
+    audio = false
+    
+    url = "rtsp://root:G3M13m0b@172.16.16.123/live1s1.sdp"
+    rtsp_user = "root"
+    rtsp_pwd = "G3M13m0b"
+    rtsp_authmethod = "digest"
+    rtsp_timeout = 10
+    
+    videopt = 96
+    videocodec = "h264"
+    videoport = 20002
+    videortpmap = "H264/90000"
+    videofmtp = "profile-level-id=42e01e;packetization-mode=1"
+    
+    video_buffer_size = 500
+    keyframe_interval = 2000
+    metadata = "Unit-001 Camera 2 - Lobby/Reception"
+    
+    enabled = true
+    secret = ""
+}
+
+// Camera Stream 3 - Parking/Exterior
+stream-3: {
+    type = "rtsp"
+    id = 3
+    description = "Edge Camera 3 - Parking"
+    video = true
+    audio = false
+    
+    url = "rtsp://root:G3M13m0b@172.16.16.124/live1s1.sdp"
+    rtsp_user = "root"
+    rtsp_pwd = "G3M13m0b"
+    rtsp_authmethod = "digest"
+    rtsp_timeout = 10
+    
+    videopt = 96
+    videocodec = "h264"
+    videoport = 20004
+    videortpmap = "H264/90000"
+    videofmtp = "profile-level-id=42e01e;packetization-mode=1"
+    
+    video_buffer_size = 500
+    keyframe_interval = 2000
+    metadata = "Unit-001 Camera 3 - Parking/Exterior"
+    
+    enabled = true
+    secret = ""
+}
+
+// Camera Stream 4 - Warehouse/Storage
+stream-4: {
+    type = "rtsp"
+    id = 4
+    description = "Edge Camera 4 - Warehouse"
+    video = true
+    audio = false
+    
+    url = "rtsp://root:G3M13m0b@172.16.16.125/live1s1.sdp"
+    rtsp_user = "root"
+    rtsp_pwd = "G3M13m0b"
+    rtsp_authmethod = "digest"
+    rtsp_timeout = 10
+    
+    videopt = 96
+    videocodec = "h264" 
+    videoport = 20006
+    videortpmap = "H264/90000"
+    videofmtp = "profile-level-id=42e01e;packetization-mode=1"
+    
+    video_buffer_size = 500
+    keyframe_interval = 2000
+    metadata = "Unit-001 Camera 4 - Warehouse/Storage"
+    
+    enabled = true
+    secret = ""
+}
+
+// Camera Stream 5 - Production/Workshop
+stream-5: {
+    type = "rtsp"
+    id = 5
+    description = "Edge Camera 5 - Production"
+    video = true
+    audio = false
+    
+    url = "rtsp://root:G3M13m0b@172.16.16.126/live1s1.sdp"
+    rtsp_user = "root"
+    rtsp_pwd = "G3M13m0b"
+    rtsp_authmethod = "digest"
+    rtsp_timeout = 10
+    
+    videopt = 96
+    videocodec = "h264"
+    videoport = 20008
+    videortpmap = "H264/90000" 
+    videofmtp = "profile-level-id=42e01e;packetization-mode=1"
+    
+    video_buffer_size = 500
+    keyframe_interval = 2000
+    metadata = "Unit-001 Camera 5 - Production/Workshop"
+    
+    enabled = true
+    secret = ""
+}
+
+// Camera Stream 6 - Security/Perimeter  
+stream-6: {
+    type = "rtsp"
+    id = 6
+    description = "Edge Camera 6 - Security"
+    video = true
+    audio = false
+    
+    url = "rtsp://root:G3M13m0b@172.16.16.127/live1s1.sdp"
+    rtsp_user = "root"
+    rtsp_pwd = "G3M13m0b"
+    rtsp_authmethod = "digest"
+    rtsp_timeout = 10
+    
+    videopt = 96
+    videocodec = "h264"
+    videoport = 20010
+    videortpmap = "H264/90000"
+    videofmtp = "profile-level-id=42e01e;packetization-mode=1"
+    
+    video_buffer_size = 500
+    keyframe_interval = 2000
+    metadata = "Unit-001 Camera 6 - Security/Perimeter"
+    
+    enabled = true
+    secret = ""
+}
+
+// Template for additional cameras (disabled by default)
+// Copy and modify these for cameras 7-12 if testing multi-unit setup
+/*
+stream-7: {
+    type = "rtsp"
+    id = 7
+    description = "Edge Camera 7 - Additional"
+    video = true
+    audio = false
+    
+    url = "rtsp://root:G3M13m0b@172.16.16.128/live1s1.sdp"
+    rtsp_user = "root"
+    rtsp_pwd = "G3M13m0b"
+    rtsp_authmethod = "digest"
+    rtsp_timeout = 10
+    
+    videopt = 96
+    videocodec = "h264"
+    videoport = 20012
+    videortpmap = "H264/90000"
+    videofmtp = "profile-level-id=42e01e;packetization-mode=1"
+    
+    video_buffer_size = 500
+    keyframe_interval = 2000
+    metadata = "Unit-001 Camera 7 - Additional"
+    
+    enabled = false  // Disabled - only enable if you have 7+ cameras
+    secret = ""
+}
+*/
