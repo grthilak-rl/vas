@@ -3,6 +3,7 @@ general: {
     debug_level = 7
 }
 
+// Active cameras with working RTSP streams
 stream-1: {
     type = "rtsp"
     id = 1

@@ -92,7 +92,7 @@ services:
     container_name: vas-backend-edge-${UNIT_ID:-001}
     network_mode: host  # Use host network for direct access to Janus
     environment:
-      - DATABASE_URL=postgresql://vas_user:vas_secure_password_2024@172.21.0.3:5432/vas_edge_${UNIT_ID:-001}
+      - DATABASE_URL=postgresql://vas_user:vas_secure_password_2024@172.21.0.2:5432/vas_edge_${UNIT_ID:-001}
       - REDIS_URL=redis://172.21.0.3:6379
       - JANUS_HTTP_URL=http://localhost:8088
       - JANUS_ADMIN_URL=http://localhost:7088/admin

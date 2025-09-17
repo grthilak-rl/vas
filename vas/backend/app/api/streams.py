@@ -247,16 +247,18 @@ async def get_webrtc_streams(
         
         streams = []
         for mountpoint in mountpoints:
-            stream_info = {
-                "stream_id": str(mountpoint["id"]),
-                "name": mountpoint.get("description", f"Stream {mountpoint['id']}"),
-                "type": mountpoint.get("type", "rtsp"),
-                "status": "active" if mountpoint.get("streaming", False) else "inactive",
-                "metadata": mountpoint.get("metadata", ""),
-                "enabled": mountpoint.get("enabled", True),
-                "webrtc_endpoint": f"/api/streams/webrtc/streams/{mountpoint['id']}/config"
-            }
-            streams.append(stream_info)
+            # Only include streams that are actually streaming (active)
+            if mountpoint.get("streaming", False):
+                stream_info = {
+                    "stream_id": str(mountpoint["id"]),
+                    "name": mountpoint.get("description", f"Stream {mountpoint['id']}"),
+                    "type": mountpoint.get("type", "rtsp"),
+                    "status": "active",
+                    "metadata": mountpoint.get("metadata", ""),
+                    "enabled": mountpoint.get("enabled", True),
+                    "webrtc_endpoint": f"/api/streams/webrtc/streams/{mountpoint['id']}/config"
+                }
+                streams.append(stream_info)
         
         logger.info(f"Retrieved {len(streams)} WebRTC streams for third-party access")
         return {
@@ -313,14 +315,33 @@ async def get_webrtc_connection_config(
     """
     Get WebRTC connection configuration for a specific stream
     This is what third-party apps need to connect to the stream
+    Accepts either device ID (UUID) or mountpoint ID (integer)
     """
     try:
-        # Verify stream exists
+        from app.core.constants import DEVICE_TO_MOUNTPOINT_MAP
+        
+        logger.info(f"WebRTC config requested for stream_id: {stream_id}")
+        logger.info(f"Available device mappings: {list(DEVICE_TO_MOUNTPOINT_MAP.keys())}")
+        
+        # Check if stream_id is a device ID (UUID) and map to mountpoint ID
+        if stream_id in DEVICE_TO_MOUNTPOINT_MAP:
+            mountpoint_id = DEVICE_TO_MOUNTPOINT_MAP[stream_id]
+            logger.info(f"Mapped device ID {stream_id} to mountpoint ID {mountpoint_id}")
+        else:
+            # Assume it's already a mountpoint ID
+            try:
+                mountpoint_id = int(stream_id)
+                logger.info(f"Using stream_id as mountpoint_id: {mountpoint_id}")
+            except ValueError:
+                logger.error(f"Stream {stream_id} not found in mappings and not a valid integer")
+                raise HTTPException(status_code=404, detail=f"Stream {stream_id} not found")
+        
+        # Verify mountpoint exists
         mountpoints = await janus_service.list_mountpoints()
-        mountpoint = next((mp for mp in mountpoints if str(mp["id"]) == stream_id), None)
+        mountpoint = next((mp for mp in mountpoints if mp["id"] == mountpoint_id), None)
         
         if not mountpoint:
-            raise HTTPException(status_code=404, detail=f"Stream {stream_id} not found")
+            raise HTTPException(status_code=404, detail=f"Mountpoint {mountpoint_id} not found")
         
         # Get Janus configuration from settings
         janus_host = "10.30.250.245"  # Your server IP
@@ -330,7 +351,8 @@ async def get_webrtc_connection_config(
         config = {
             "janus_websocket_url": f"ws://{janus_host}:{janus_ws_port}",
             "janus_http_url": f"http://{janus_host}:{janus_http_port}",
-            "mountpoint_id": int(stream_id),
+            "mountpoint_id": mountpoint_id,
+            "stream_id": mountpoint_id,  # For compatibility
             "plugin": "janus.plugin.streaming",
             "connection_timeout": 30000,  # 30 seconds
             "ice_servers": [

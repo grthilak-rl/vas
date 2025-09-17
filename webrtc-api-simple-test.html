@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAS WebRTC API Gateway - Simple Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #bee5eb;
+        }
+        
+        .stream-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stream-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .stream-card:hover {
+            border-color: #3498db;
+        }
+        
+        .stream-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .stream-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .config-display {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+        
+        .logs {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .log-entry {
+            margin-bottom: 3px;
+            padding: 3px;
+            border-radius: 3px;
+        }
+        
+        .log-info {
+            background: rgba(52, 152, 219, 0.2);
+        }
+        
+        .log-success {
+            background: rgba(46, 204, 113, 0.2);
+        }
+        
+        .log-error {
+            background: rgba(231, 76, 60, 0.2);
+        }
+        
+        .timestamp {
+            color: #95a5a6;
+            font-size: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎥 VAS WebRTC API Gateway - Simple Test</h1>
+            <p>Test WebRTC streaming endpoints (API testing only)</p>
+        </div>
+        
+        <div class="content">
+            <!-- Authentication Section -->
+            <div class="section">
+                <h2>🔐 Authentication</h2>
+                <div class="form-group">
+                    <label for="apiBaseUrl">API Base URL:</label>
+                    <input type="text" id="apiBaseUrl" value="http://10.30.250.245:8000" placeholder="http://your-server:8000">
+                </div>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" value="admin" placeholder="admin">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" value="admin123" placeholder="admin123">
+                </div>
+                <button onclick="authenticate()" id="authBtn">Authenticate</button>
+                <div id="authStatus"></div>
+            </div>
+            
+            <!-- Stream Discovery Section -->
+            <div class="section">
+                <h2>📡 Stream Discovery</h2>
+                <button onclick="discoverStreams()" id="discoverBtn" disabled>Discover Available Streams</button>
+                <div id="streamsStatus"></div>
+                <div id="streamsList" class="stream-list"></div>
+            </div>
+            
+            <!-- Stream Configuration Section -->
+            <div class="section">
+                <h2>🔧 Stream Configuration</h2>
+                <div class="form-group">
+                    <label for="streamSelect">Select Stream:</label>
+                    <select id="streamSelect" disabled>
+                        <option value="">Select a stream...</option>
+                    </select>
+                </div>
+                <button onclick="getStreamConfig()" id="configBtn" disabled>Get WebRTC Configuration</button>
+                <div id="configStatus"></div>
+                <div id="configDisplay" class="config-display" style="display: none;"></div>
+            </div>
+            
+            <!-- System Status Section -->
+            <div class="section">
+                <h2>📊 System Status</h2>
+                <button onclick="checkSystemStatus()" id="statusBtn" disabled>Check System Status</button>
+                <div id="systemStatus"></div>
+                <div id="stats" class="stats"></div>
+            </div>
+            
+            <!-- Logs Section -->
+            <div class="section">
+                <h2>📝 Activity Logs</h2>
+                <button onclick="clearLogs()">Clear Logs</button>
+                <div id="logs" class="logs"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let authToken = null;
+        let apiBaseUrl = 'http://10.30.250.245:8000';
+        let availableStreams = [];
+        
+        // Logging function
+        function log(message, type = 'info') {
+            const logsContainer = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        // Clear logs
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        // Authentication
+        async function authenticate() {
+            const btn = document.getElementById('authBtn');
+            const statusDiv = document.getElementById('authStatus');
+            
+            btn.disabled = true;
+            btn.textContent = 'Authenticating...';
+            
+            try {
+                apiBaseUrl = document.getElementById('apiBaseUrl').value;
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                const response = await fetch(`${apiBaseUrl}/api/auth/login-json`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                authToken = data.access_token;
+                
+                statusDiv.innerHTML = '<div class="success">✅ Authentication successful!</div>';
+                log(`Authenticated as ${username}`, 'success');
+                
+                // Enable other buttons
+                document.getElementById('discoverBtn').disabled = false;
+                document.getElementById('statusBtn').disabled = false;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Authentication failed: ${error.message}</div>`;
+                log(`Authentication failed: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Authenticate';
+            }
+        }
+        
+        // Discover streams
+        async function discoverStreams() {
+            const btn = document.getElementById('discoverBtn');
+            const statusDiv = document.getElementById('streamsStatus');
+            const streamsListDiv = document.getElementById('streamsList');
+            const streamSelect = document.getElementById('streamSelect');
+            
+            btn.disabled = true;
+            btn.textContent = 'Discovering...';
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/streams/webrtc/streams`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                availableStreams = data.streams;
+                
+                statusDiv.innerHTML = `<div class="success">✅ Found ${data.total_count} streams</div>`;
+                log(`Discovered ${data.total_count} streams`, 'success');
+                
+                // Update streams list
+                streamsListDiv.innerHTML = '';
+                streamSelect.innerHTML = '<option value="">Select a stream...</option>';
+                
+                availableStreams.forEach(stream => {
+                    // Add to dropdown
+                    const option = document.createElement('option');
+                    option.value = stream.stream_id;
+                    option.textContent = `${stream.name} (${stream.status})`;
+                    streamSelect.appendChild(option);
+                    
+                    // Add to cards
+                    const card = document.createElement('div');
+                    card.className = 'stream-card';
+                    card.innerHTML = `
+                        <h3>${stream.name}</h3>
+                        <p><strong>ID:</strong> ${stream.stream_id}</p>
+                        <p><strong>Type:</strong> ${stream.type}</p>
+                        <p><strong>Status:</strong> <span class="stream-status status-${stream.status}">${stream.status}</span></p>
+                        <p><strong>Metadata:</strong> ${stream.metadata}</p>
+                        <p><strong>Enabled:</strong> ${stream.enabled ? 'Yes' : 'No'}</p>
+                    `;
+                    streamsListDiv.appendChild(card);
+                });
+                
+                // Enable stream selection
+                streamSelect.disabled = false;
+                document.getElementById('configBtn').disabled = false;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Failed to discover streams: ${error.message}</div>`;
+                log(`Stream discovery failed: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Discover Available Streams';
+            }
+        }
+        
+        // Get stream configuration
+        async function getStreamConfig() {
+            const streamId = document.getElementById('streamSelect').value;
+            if (!streamId) {
+                alert('Please select a stream first');
+                return;
+            }
+            
+            const btn = document.getElementById('configBtn');
+            const statusDiv = document.getElementById('configStatus');
+            const configDiv = document.getElementById('configDisplay');
+            
+            btn.disabled = true;
+            btn.textContent = 'Getting Configuration...';
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/streams/webrtc/streams/${streamId}/config`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const config = await response.json();
+                
+                statusDiv.innerHTML = '<div class="success">✅ WebRTC configuration retrieved!</div>';
+                log(`Got WebRTC config for stream ${streamId}`, 'success');
+                
+                // Display configuration
+                configDiv.style.display = 'block';
+                configDiv.innerHTML = `
+<strong>WebRTC Configuration for Stream ${streamId}:</strong>
+${JSON.stringify(config, null, 2)}
+
+<strong>Connection Details:</strong>
+• WebSocket URL: ${config.janus_websocket_url}
+• HTTP URL: ${config.janus_http_url}
+• Mountpoint ID: ${config.mountpoint_id}
+• Plugin: ${config.plugin}
+• Connection Timeout: ${config.connection_timeout}ms
+
+<strong>ICE Servers:</strong>
+${config.ice_servers.map(server => `• ${server.urls}`).join('\n')}
+
+<strong>WebRTC Options:</strong>
+• Trickle ICE: ${config.webrtc_options.trickle}
+• ICE TCP: ${config.webrtc_options.ice_tcp}
+• ICE Lite: ${config.webrtc_options.ice_lite}
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Failed to get configuration: ${error.message}</div>`;
+                log(`Configuration retrieval failed: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Get WebRTC Configuration';
+            }
+        }
+        
+        // Check system status
+        async function checkSystemStatus() {
+            const btn = document.getElementById('statusBtn');
+            const statusDiv = document.getElementById('systemStatus');
+            const statsDiv = document.getElementById('stats');
+            
+            btn.disabled = true;
+            btn.textContent = 'Checking...';
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/streams/webrtc/system/status`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                const statusClass = data.system_status === 'healthy' ? 'success' : 'error';
+                statusDiv.innerHTML = `<div class="${statusClass}">System Status: ${data.system_status.toUpperCase()}</div>`;
+                
+                // Update stats
+                statsDiv.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${data.total_streams}</div>
+                        <div class="stat-label">Total Streams</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.active_streams}</div>
+                        <div class="stat-label">Active Streams</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.enabled_streams}</div>
+                        <div class="stat-label">Enabled Streams</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.janus_healthy ? 'Yes' : 'No'}</div>
+                        <div class="stat-label">Janus Healthy</div>
+                    </div>
+                `;
+                
+                log(`System status: ${data.system_status}`, 'info');
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Failed to check system status: ${error.message}</div>`;
+                log(`System status check failed: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Check System Status';
+            }
+        }
+        
+        // Initialize
+        log('WebRTC API Gateway Simple Test Page loaded', 'info');
+        log('Ready to test WebRTC API endpoints', 'info');
+    </script>
+</body>
+</html>
