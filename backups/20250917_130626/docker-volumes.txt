@@ -1,0 +1,19 @@
+DRIVER    VOLUME NAME
+local     8dcd1161e5578eb3f2ff20b82244e7ba816af0a9d170fefb8e3196bd83237e61
+local     14d23c5e7e26604d655862f8ae439ff1f47c9db9e7a52fc87d4fcba99a48021c
+local     1919ea175037aaeb919cb8cb90f0e2ad6421640ac6742bbb7fc63e953e5141c4
+local     04217a8f37cd948bb7f8032fc6cd09d4e71800131423afa7daaeebc04ad40dd4
+local     d8def6658d1848210c69b7d1e781f4a89e72523b62d7c5ce40bd33c248ee42be
+local     edge_db_data_001
+local     edge_redis_data_001
+local     ruth-ai-monitor_database-data
+local     ruth-ai-monitor_redis-data
+local     ruth-ai_mysql_data
+local     ruth-ai_ruth_mysql_data
+local     ruth-ai_vas_postgres_data
+local     vas-test_hls_output
+local     vas-test_postgres_data
+local     vas-test_redis_data
+local     vas_frontend_dist_001
+local     vas_postgres_data
+local     vas_redis_data

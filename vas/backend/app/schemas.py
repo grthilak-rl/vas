@@ -36,6 +36,7 @@ class DeviceCreate(BaseModel):
 
 
 class DeviceUpdate(BaseModel):
+    name: Optional[str] = None
     hostname: Optional[str] = None
     vendor: Optional[str] = None
     model: Optional[str] = None

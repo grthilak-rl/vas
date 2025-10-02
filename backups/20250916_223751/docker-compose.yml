@@ -1,0 +1,164 @@
+# Combined VAS + Janus Gateway Integration
+# This runs both VAS and our Janus service together for proof-of-concept
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database (VAS)
+  db:
+    image: postgres:15-alpine
+    container_name: vas_db
+    environment:
+      POSTGRES_DB: vas_db
+      POSTGRES_USER: vas_user
+      POSTGRES_PASSWORD: vas_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./vas/backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - integrated_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vas_user -d vas_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache (VAS)
+  redis:
+    image: redis:7-alpine
+    container_name: vas_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - integrated_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Our Custom Janus Gateway (RTSP -> WebRTC)
+  janus-gateway:
+    build:
+      context: ./janus
+      dockerfile: Dockerfile
+    container_name: janus_gateway
+    environment:
+      - JANUS_CONFIG_FILE=/opt/janus/etc/janus/janus.jcfg
+    network_mode: host
+    volumes:
+      - ./janus/config:/opt/janus/etc/janus:ro
+      - ./janus/recordings:/opt/janus/share/janus/recordings
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/janus/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Our Janus FastAPI Service (Camera Management)
+  janus-api:
+    build:
+      context: ./janus/api
+      dockerfile: Dockerfile
+    container_name: janus_api
+    ports:
+      - "3000:3000"
+    environment:
+      - JANUS_HTTP_URL=http://host.docker.internal:7088/admin
+      - JANUS_ADMIN_URL=http://host.docker.internal:7088/admin
+      - JANUS_WS_URL=ws://host.docker.internal:8188/janus
+    depends_on:
+      - janus-gateway
+    networks:
+      - integrated_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # VAS Backend API
+  vas-backend:
+    build:
+      context: ./vas/backend
+      dockerfile: Dockerfile
+    container_name: vas_backend
+    environment:
+      - DATABASE_URL=postgresql://vas_user:vas_password@db:5432/vas_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-super-secret-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - SCAN_TIMEOUT=5
+      - MAX_CONCURRENT_SCANS=50
+      - RTSP_PORTS=554,8554
+      - FFPROBE_TIMEOUT=10
+      - VALIDATION_RETRIES=3
+      # Point to our Janus services
+      - JANUS_HTTP_URL=http://host.docker.internal:8088/janus
+      - JANUS_WS_URL=ws://host.docker.internal:8188/janus
+      - JANUS_ADMIN_SECRET=supersecretkey
+      - JANUS_SERVICE_URL=http://janus-api:3000
+      - DEBUG=True
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+      - janus-gateway
+      - janus-api
+    networks:
+      - integrated_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # VAS Frontend (React)
+  vas-frontend:
+    build:
+      context: ./vas/frontend
+      dockerfile: Dockerfile
+    container_name: vas_frontend
+    ports:
+      - "3001:3000"  # Use 3001 to avoid conflict with janus-api
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_JANUS_WS_URL=ws://localhost:8188/janus
+    depends_on:
+      - vas-backend
+    networks:
+      - integrated_network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (combines VAS frontend + Janus access)
+  nginx:
+    image: nginx:alpine
+    container_name: integrated_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - vas-frontend
+      - vas-backend
+      - janus-gateway
+    networks:
+      - integrated_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  integrated_network:
+    driver: bridge
