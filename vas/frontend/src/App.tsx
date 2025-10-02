@@ -10,6 +10,7 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Devices } from './pages/Devices';
 import { Streams } from './pages/Streams';
+import { Snapshots } from './pages/Snapshots';
 
 // Create a theme instance
 const theme = createTheme({
@@ -85,6 +86,16 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Layout>
                 <Streams />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/snapshots"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Snapshots />
               </Layout>
             </ProtectedRoute>
           }

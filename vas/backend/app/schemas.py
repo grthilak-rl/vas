@@ -91,28 +91,84 @@ class DeviceResponse(BaseModel):
         if hasattr(v, '__str__'):
             return str(v)
         return v
+
+
+# Snapshot Schemas
+class SnapshotBase(BaseModel):
+    """Base schema for snapshot data"""
+    image_format: str = "jpeg"
+    width: Optional[int] = None
+    height: Optional[int] = None
+
+
+class SnapshotCreate(SnapshotBase):
+    """Schema for creating a snapshot"""
+    device_id: str
+
+
+class SnapshotResponse(SnapshotBase):
+    """Schema for snapshot response (without image data)"""
+    model_config = {"from_attributes": True}
     
-    @field_validator('tags', mode='before')
-    @classmethod
-    def validate_tags(cls, v):
-        """Deserialize tags from JSON string if needed."""
-        if isinstance(v, str):
-            try:
-                return json.loads(v)
-            except (json.JSONDecodeError, TypeError):
-                return []
-        return v or []
+    id: str
+    device_id: str
+    file_size: Optional[int] = None
+    captured_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
     
-    @field_validator('metadata', mode='before')
+    @field_validator('id', mode='before')
     @classmethod
-    def validate_metadata(cls, v):
-        """Deserialize metadata from JSON string if needed."""
-        if isinstance(v, str):
-            try:
-                return json.loads(v)
-            except (json.JSONDecodeError, TypeError):
-                return {}
-        return v or {}
+    def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class SnapshotListResponse(BaseModel):
+    """Schema for snapshot list response"""
+    snapshots: List[SnapshotResponse]
+    total: int
+    page: int
+    per_page: int
+
+
+class SnapshotImageResponse(BaseModel):
+    """Schema for snapshot image response"""
+    id: str
+    device_id: str
+    image_data: str  # Base64 encoded image
+    image_format: str
+    width: Optional[int] = None
+    height: Optional[int] = None
+    file_size: Optional[int] = None
+    captured_at: Optional[datetime] = None
+    
+    @field_validator('id', mode='before')
+    @classmethod
+    def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
 
 
 class DeviceListResponse(BaseModel):
@@ -220,6 +276,83 @@ class StreamResponse(BaseModel):
     @field_validator('id', mode='before')
     @classmethod
     def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+# Snapshot Schemas
+class SnapshotBase(BaseModel):
+    """Base schema for snapshot data"""
+    image_format: str = "jpeg"
+    width: Optional[int] = None
+    height: Optional[int] = None
+
+
+class SnapshotCreate(SnapshotBase):
+    """Schema for creating a snapshot"""
+    device_id: str
+
+
+class SnapshotResponse(SnapshotBase):
+    """Schema for snapshot response (without image data)"""
+    model_config = {"from_attributes": True}
+    
+    id: str
+    device_id: str
+    file_size: Optional[int] = None
+    captured_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    @field_validator('id', mode='before')
+    @classmethod
+    def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class SnapshotListResponse(BaseModel):
+    """Schema for snapshot list response"""
+    snapshots: List[SnapshotResponse]
+    total: int
+    page: int
+    per_page: int
+
+
+class SnapshotImageResponse(BaseModel):
+    """Schema for snapshot image response"""
+    id: str
+    device_id: str
+    image_data: str  # Base64 encoded image
+    image_format: str
+    width: Optional[int] = None
+    height: Optional[int] = None
+    file_size: Optional[int] = None
+    captured_at: Optional[datetime] = None
+    
+    @field_validator('id', mode='before')
+    @classmethod
+    def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
         """Convert UUID to string if needed."""
         if hasattr(v, '__str__'):
             return str(v)

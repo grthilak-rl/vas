@@ -9,7 +9,9 @@ import {
   DiscoveryTask,
   Stream,
   StreamResponse,
-  HealthStatus
+  HealthStatus,
+  Snapshot,
+  SnapshotListResponse
 } from '../types';
 
 class ApiService {
@@ -173,6 +175,44 @@ class ApiService {
   // Metrics
   async getMetrics(): Promise<any> {
     const response: AxiosResponse = await this.api.get('/api/metrics');
+    return response.data;
+  }
+
+  // Snapshots
+  async captureSnapshot(deviceId: string): Promise<Snapshot> {
+    const response: AxiosResponse<Snapshot> = await this.api.post(`/api/snapshots/capture/${deviceId}`);
+    return response.data;
+  }
+
+  async getSnapshots(deviceId?: string, page: number = 1, perPage: number = 10): Promise<SnapshotListResponse> {
+    const params: any = { page, per_page: perPage };
+    if (deviceId) {
+      params.device_id = deviceId;
+    }
+    
+    const response: AxiosResponse<SnapshotListResponse> = await this.api.get(`/api/snapshots`, {
+      params
+    });
+    return response.data;
+  }
+
+  async getLatestSnapshot(deviceId: string): Promise<Snapshot> {
+    const response: AxiosResponse<Snapshot> = await this.api.get(`/api/snapshots/device/${deviceId}/latest`);
+    return response.data;
+  }
+
+  async deleteSnapshot(snapshotId: string): Promise<void> {
+    await this.api.delete(`/api/snapshots/${snapshotId}`);
+  }
+
+  getSnapshotImageUrl(snapshotId: string): string {
+    return `${this.baseURL}/api/snapshots/${snapshotId}/binary`;
+  }
+
+  async getSnapshotImageBinary(snapshotId: string): Promise<Blob> {
+    const response: AxiosResponse<Blob> = await this.api.get(`/api/snapshots/${snapshotId}/binary`, {
+      responseType: 'blob' // Important for binary data
+    });
     return response.data;
   }
 }

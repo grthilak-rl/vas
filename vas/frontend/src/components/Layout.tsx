@@ -29,6 +29,7 @@ import {
   Devices,
   Stream,
   HealthAndSafety,
+  PhotoCamera,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,6 +44,7 @@ const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
   { text: 'Devices', icon: <Devices />, path: '/devices' },
   { text: 'Streams', icon: <Stream />, path: '/streams' },
+  { text: 'Snapshots', icon: <PhotoCamera />, path: '/snapshots' },
   { text: 'Discovery', icon: <Search />, path: '/discovery' },
   { text: 'Health', icon: <HealthAndSafety />, path: '/health' },
   { text: 'Settings', icon: <Settings />, path: '/settings' },

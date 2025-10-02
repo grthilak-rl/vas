@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, LargeBinary, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -69,6 +70,41 @@ class Device(Base):
             "last_seen": self.last_seen.isoformat() if self.last_seen else None,
             "status": self.status,
             "credentials_secure": self.credentials_secure,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class Snapshot(Base):
+    __tablename__ = "snapshots"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    device_id = Column(UUID(as_uuid=True), ForeignKey('devices.id', ondelete='CASCADE'), nullable=False)
+    image_data = Column(LargeBinary, nullable=False)
+    image_format = Column(String(10), nullable=False, default='jpeg')
+    width = Column(Integer, nullable=True)
+    height = Column(Integer, nullable=True)
+    file_size = Column(Integer, nullable=True)
+    captured_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship to Device
+    device = relationship("Device", backref="snapshots")
+    
+    def __repr__(self):
+        return f"<Snapshot(id={self.id}, device_id={self.device_id}, captured_at={self.captured_at})>"
+    
+    def to_dict(self):
+        """Convert snapshot to dictionary for API responses."""
+        return {
+            "id": str(self.id),
+            "device_id": str(self.device_id),
+            "image_format": self.image_format,
+            "width": self.width,
+            "height": self.height,
+            "file_size": self.file_size,
+            "captured_at": self.captured_at.isoformat() if self.captured_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         } 

@@ -8,7 +8,7 @@ import logging
 
 from app.config import settings
 from app.database import engine, Base
-from app.api import auth, devices, discovery, streams
+from app.api import auth, devices, discovery, streams, snapshots
 from app.api.dependencies import get_current_user
 from app.services.validation import validation_service
 
@@ -39,6 +39,7 @@ app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(devices.router, prefix=settings.api_v1_prefix)
 app.include_router(discovery.router, prefix=settings.api_v1_prefix)
 app.include_router(streams.router, prefix=settings.api_v1_prefix)
+app.include_router(snapshots.router, prefix=settings.api_v1_prefix)
 
 
 @app.on_event("startup")
