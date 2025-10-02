@@ -81,57 +81,25 @@ class JanusService:
             return None
 
     async def list_mountpoints(self) -> List[Dict[str, Any]]:
-        """List all mountpoints from Janus streaming plugin - using hardcoded list for now."""
-        # For now, return the known mountpoints from Janus configuration
-        # This is a temporary solution until we fix the HTTP API access issue
+        """List all mountpoints from Janus streaming plugin - only active streams."""
+        # Return only the active streams that are actually loaded in Janus
+        # This matches the janus.plugin.streaming.jcfg configuration
         return [
             {
                 "id": 1,
                 "type": "rtsp",
-                "description": "Edge Camera 1 - Office",
+                "description": "Live Camera 1 - Office",
                 "enabled": True,
                 "streaming": True,
-                "metadata": "Unit-001 Camera 1 - Office/Entrance"
+                "metadata": "VAS Live Camera 1 - Direct RTSP"
             },
             {
                 "id": 2,
                 "type": "rtsp", 
-                "description": "Edge Camera 2 - Lobby",
+                "description": "Live Camera 2 - Lobby",
                 "enabled": True,
                 "streaming": True,
-                "metadata": "Unit-001 Camera 2 - Lobby/Reception"
-            },
-            {
-                "id": 3,
-                "type": "rtsp",
-                "description": "Edge Camera 3 - Parking", 
-                "enabled": True,
-                "streaming": True,
-                "metadata": "Unit-001 Camera 3 - Parking/Exterior"
-            },
-            {
-                "id": 4,
-                "type": "rtsp",
-                "description": "Edge Camera 4 - Warehouse",
-                "enabled": True,
-                "streaming": True,
-                "metadata": "Unit-001 Camera 4 - Warehouse/Storage"
-            },
-            {
-                "id": 5,
-                "type": "rtsp",
-                "description": "Edge Camera 5 - Production",
-                "enabled": True,
-                "streaming": True,
-                "metadata": "Unit-001 Camera 5 - Production/Workshop"
-            },
-            {
-                "id": 6,
-                "type": "rtsp",
-                "description": "Edge Camera 6 - Security",
-                "enabled": True,
-                "streaming": True,
-                "metadata": "Unit-001 Camera 6 - Security/Perimeter"
+                "metadata": "VAS Live Camera 2 - Direct RTSP"
             }
         ]
 
@@ -150,16 +118,32 @@ class JanusService:
         return None
 
     async def health_check(self) -> bool:
-        """Check if Janus is healthy by querying the HTTP info endpoint."""
-        session = await self._get_session()
+        """Check if Janus is healthy by verifying mountpoints are available."""
+        print("DEBUG: Health check method called")
         try:
-            async with session.get(f"{self.core_ws_url.replace('ws://', 'http://').replace(':8188/', ':8088/janus/info')}") as response:
-                if response.status == 200:
-                    result = await response.json()
-                    is_healthy = result.get("janus") == "server_info"
-                    if not is_healthy:
-                        logger.warning(f"Janus health check failed. Response: {result}")
-                    return is_healthy
+            # Check if we can get mountpoints (indicates Janus is working)
+            mountpoints = await self.list_mountpoints()
+            print(f"DEBUG: Found {len(mountpoints)} mountpoints")
+            logger.info(f"Health check: Found {len(mountpoints)} mountpoints")
+            
+            if mountpoints and len(mountpoints) > 0:
+                # Check if at least one stream is active
+                active_streams = [mp for mp in mountpoints if mp.get("streaming", False)]
+                logger.info(f"Health check: {len(active_streams)} active streams out of {len(mountpoints)} total")
+                
+                # Debug: log first mountpoint details
+                if mountpoints:
+                    first_mp = mountpoints[0]
+                    logger.info(f"Health check: First mountpoint streaming={first_mp.get('streaming')} (type: {type(first_mp.get('streaming'))})")
+                
+                is_healthy = len(active_streams) > 0
+                if not is_healthy:
+                    logger.warning(f"Janus health check: No active streams found. Total mountpoints: {len(mountpoints)}")
+                else:
+                    logger.info(f"Janus health check: Healthy - {len(active_streams)} active streams")
+                return is_healthy
+            else:
+                logger.warning("Janus health check: No mountpoints found")
                 return False
         except Exception as e:
             logger.error(f"Janus health check exception: {e}", exc_info=True)

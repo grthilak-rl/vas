@@ -1,0 +1,17 @@
+NAMES                       IMAGE                                  STATUS                      PORTS
+vas-backend-edge-001        vas_vas-backend-edge                   Up 15 minutes (unhealthy)   
+edge-api-001                vas_edge-api                           Up 40 minutes (healthy)     0.0.0.0:3001->3001/tcp, [::]:3001->3001/tcp
+nginx-edge-001              nginx:alpine                           Up 40 minutes (healthy)     0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp
+janus-edge-001              vas_janus-edge                         Up 40 minutes (unhealthy)   
+edge-monitor-001            prom/node-exporter:latest              Up 40 minutes               
+edge-db-001                 postgres:13                            Up 40 minutes (healthy)     5432/tcp
+edge-redis-001              redis:7-alpine                         Up 40 minutes (healthy)     6379/tcp
+ruth-monitor-gateway        d6adbc7fd47e                           Up 24 hours                 0.0.0.0:3005->80/tcp, [::]:3005->80/tcp, 0.0.0.0:3006->443/tcp, [::]:3006->443/tcp
+ruth-monitor-notification   ruth-ai-monitor_notification-service   Up 25 hours (healthy)       3000/tcp
+ruth-monitor-auth           ruth-ai-monitor_auth-service           Up 25 hours (healthy)       3000/tcp
+ruth-monitor-camera         ruth-ai-monitor_camera-service         Up 25 hours (healthy)       3000/tcp
+ruth-monitor-violation      ruth-ai-monitor_violation-service      Up 25 hours (healthy)       3000/tcp
+ruth-monitor-redis          redis:7-alpine                         Up 25 hours (healthy)       0.0.0.0:6381->6379/tcp, [::]:6381->6379/tcp
+ruth-monitor-ai-models      ruth-ai-monitor_ai-models-service      Up 25 hours (healthy)       8000/tcp
+ruth-monitor-database       mysql:8.0                              Up 25 hours (healthy)       33060/tcp, 0.0.0.0:3308->3306/tcp, [::]:3308->3306/tcp
+ruth-mysql-demo             mysql:8.0                              Up 40 hours                 33060/tcp, 0.0.0.0:3307->3306/tcp, [::]:3307->3306/tcp

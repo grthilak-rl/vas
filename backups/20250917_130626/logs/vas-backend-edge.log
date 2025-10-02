@@ -1,0 +1,132 @@
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+🚀 Video Aggregation Service v1.0.0 started
+INFO:     127.0.0.1:58402 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54746 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:38024 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:38038 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+ERROR:app.database:Database session error: 
+INFO:     127.0.0.1:49636 - "GET /api/devices/ HTTP/1.1" 403 Forbidden
+ERROR:app.database:Database session error: 
+INFO:     127.0.0.1:49652 - "GET /api/devices/ HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54406 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:58230 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:58244 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42924 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:43904 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:43914 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53035 - "OPTIONS /api/devices/?skip=0&limit=1000 HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53034 - "OPTIONS /api/streams HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53036 - "OPTIONS /api/health HTTP/1.1" 200 OK
+ERROR:app.database:Database session error: 
+INFO:     10.30.51.84:53037 - "GET /api/devices/?skip=0&limit=1000 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:46078 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     10.30.51.84:53065 - "OPTIONS /api/auth/login-json HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53065 - "POST /api/auth/login-json HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53065 - "GET /api/devices/?skip=0&limit=1000 HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53066 - "GET /api/streams HTTP/1.1" 307 Temporary Redirect
+INFO:     10.30.51.84:53067 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53066 - "OPTIONS /api/streams/ HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53067 - "GET /api/streams/ HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53065 - "GET /api/streams HTTP/1.1" 307 Temporary Redirect
+INFO:     10.30.51.84:53067 - "GET /api/devices/?skip=0&limit=1000 HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53065 - "GET /api/streams/ HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53065 - "OPTIONS /api/streams/05a9a734-f76d-4f45-9b0e-1e9c89b43e2c/start HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53065 - "POST /api/streams/05a9a734-f76d-4f45-9b0e-1e9c89b43e2c/start HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53065 - "GET /api/streams HTTP/1.1" 307 Temporary Redirect
+INFO:     10.30.51.84:53067 - "GET /api/streams HTTP/1.1" 307 Temporary Redirect
+INFO:     10.30.51.84:53065 - "GET /api/streams/ HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53067 - "GET /api/streams/ HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53067 - "OPTIONS /api/streams/df5ec5a5-f3f2-4672-971b-b5df48fc9a05/start HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53067 - "POST /api/streams/df5ec5a5-f3f2-4672-971b-b5df48fc9a05/start HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53067 - "GET /api/streams HTTP/1.1" 307 Temporary Redirect
+INFO:     10.30.51.84:53065 - "GET /api/streams HTTP/1.1" 307 Temporary Redirect
+INFO:     10.30.51.84:53067 - "GET /api/streams/ HTTP/1.1" 200 OK
+INFO:     10.30.51.84:53065 - "GET /api/streams/ HTTP/1.1" 200 OK
+INFO:     172.20.0.6:52602 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:52610 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59978 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:34696 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:34698 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53428 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:41658 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:41674 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55040 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:38160 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:38174 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51316 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:53574 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:53580 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35840 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:60144 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:60152 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38612 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:52684 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:52698 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36382 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:34854 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:34864 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50902 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:42816 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:42820 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54166 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:35164 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:43956 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38200 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:47386 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:47388 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49030 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:33060 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:33064 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33088 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:49506 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:49522 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48620 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:50048 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:50058 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45704 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:54036 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:54038 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53664 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:35150 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:35162 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41884 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:39580 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:39590 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37042 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:49814 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:49818 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47798 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:58238 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:58242 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34920 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:52846 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:52858 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52694 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:51978 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:51986 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40510 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:47020 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:47028 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41494 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:58024 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:58040 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36856 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:50270 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:50276 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55190 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:56608 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:56610 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45078 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:40380 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:40392 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47044 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:38582 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:38590 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58324 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     172.20.0.6:39518 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     172.20.0.6:39522 - "GET /api/streams/janus/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57720 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57730 - "GET /api/health HTTP/1.1" 200 OK

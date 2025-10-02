@@ -53,14 +53,14 @@ services:
       timeout: 10s
       retries: 3
 
-  # Janus Gateway optimized for ASRock (6 cameras max)
+  # Janus Gateway optimized for ASRock (6 cameras max) - Custom Build
   janus-edge:
-    image: canyan/janus-gateway:latest
+    build:
+      context: ./janus
+      dockerfile: Dockerfile
     container_name: janus-edge-${UNIT_ID:-001}
     network_mode: host  # Optimal performance for edge deployment
     volumes:
-      - ./janus/config/edge-janus.jcfg:/opt/janus/etc/janus/janus.jcfg:ro
-      - ./janus/config/janus.plugin.streaming.edge.jcfg:/opt/janus/etc/janus/janus.plugin.streaming.jcfg:ro
       - ./recordings:/opt/janus/share/janus/recordings
       - /dev/dri:/dev/dri  # Intel Arc GPU access for future hardware acceleration
     environment:

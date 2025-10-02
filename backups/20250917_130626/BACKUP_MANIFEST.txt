@@ -1,0 +1,45 @@
+VAS Configuration Backup Manifest
+=================================
+
+Backup Date: Wed Sep 17 01:06:27 PM IST 2025
+Backup Directory: backups/20250917_130626
+System: Linux atgin-rnd-ubuntu 6.14.0-24-generic #24~24.04.3-Ubuntu SMP PREEMPT_DYNAMIC Mon Jul  7 16:39:17 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+
+Critical Files Backed Up:
+- janus/config/ (Janus configuration)
+- docker-compose.asrock-edge.yml (Docker Compose configuration)
+- deploy-edge.sh (Deployment script)
+- nginx-edge.conf (Nginx configuration)
+- frontend-dist/ (Frontend distribution)
+
+Docker State:
+- Images: docker-images.txt
+- Containers: docker-containers.txt
+- Networks: docker-networks.txt
+- Volumes: docker-volumes.txt
+
+System Information:
+- system-info.txt (OS, Docker versions)
+- network-config.txt (Network configuration)
+- disk-usage.txt (Disk usage)
+- memory-info.txt (Memory information)
+
+Service Logs:
+- logs/janus-edge.log
+- logs/vas-backend-edge.log
+- logs/edge-db.log
+- logs/edge-redis.log
+- logs/nginx-edge.log
+
+Recovery Instructions:
+1. Stop all services: docker-compose -f docker-compose.asrock-edge.yml down
+2. Restore configuration: cp -r backups/20250917_130626/* ./
+3. Rebuild custom Janus: docker-compose -f docker-compose.asrock-edge.yml build janus-edge
+4. Start services: docker-compose -f docker-compose.asrock-edge.yml up -d
+5. Verify: ./deploy-edge.sh
+
+Notes:
+- This backup represents a working configuration
+- Janus image: vas_janus-edge (custom build)
+- RTSP authentication: digest method
+- Database IP: 172.21.0.3 (for host networking)
