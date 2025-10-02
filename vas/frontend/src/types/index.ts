@@ -168,6 +168,26 @@ export interface WebRTCConfig {
   handle_id?: string;
 }
 
+// Snapshot Types
+export interface Snapshot {
+  id: string;
+  device_id: string;
+  image_format: string;
+  width?: number;
+  height?: number;
+  file_size?: number;
+  captured_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SnapshotListResponse {
+  snapshots: Snapshot[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
 // UI Types
 export interface TableColumn {
   field: string;

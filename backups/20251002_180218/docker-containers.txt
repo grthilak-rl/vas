@@ -1,0 +1,18 @@
+NAMES                         IMAGE                                  STATUS                   PORTS
+angry_haslett                 gas_sensor_app                         Up 7 days                0.0.0.0:8002->8002/tcp, [::]:8002->8002/tcp
+ruth-monitor-gateway          nginx:alpine                           Up 2 weeks               0.0.0.0:3005->80/tcp, [::]:3005->80/tcp, 0.0.0.0:3006->443/tcp, [::]:3006->443/tcp
+ruth-monitor-notification     ruth-ai-monitor-notification-service   Up 2 weeks (healthy)     3000/tcp
+ruth-monitor-violation        ruth-ai-monitor-violation-service      Up 2 weeks (healthy)     3000/tcp
+ruth-monitor-auth             ruth-ai-monitor-auth-service           Up 2 weeks (healthy)     3000/tcp
+ruth-monitor-camera           ruth-ai-monitor-camera-service         Up 2 weeks (healthy)     3000/tcp
+ruth-monitor-ai-models        ruth-ai-monitor-ai-models-service      Up 2 weeks (healthy)     8000/tcp
+ruth-monitor-database         mysql:8.0                              Up 2 weeks (healthy)     33060/tcp, 0.0.0.0:3308->3306/tcp, [::]:3308->3306/tcp
+ruth-monitor-redis            redis:7-alpine                         Up 2 weeks (healthy)     0.0.0.0:6381->6379/tcp, [::]:6381->6379/tcp
+vas-backend-edge-001          vas_vas-backend-edge                   Up 2 weeks (unhealthy)   
+edge-api-001                  vas_edge-api                           Up 2 weeks (healthy)     0.0.0.0:3001->3001/tcp, [::]:3001->3001/tcp
+nginx-edge-001                nginx:alpine                           Up 2 weeks (healthy)     0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp
+janus-edge-001                41f9f9b25260                           Up 2 weeks (unhealthy)   
+edge-monitor-001              prom/node-exporter:latest              Up 2 weeks               
+5df0f4767f6a_edge-db-001      postgres:13                            Up 2 weeks (healthy)     5432/tcp
+aa20540531f2_edge-redis-001   redis:7-alpine                         Up 2 weeks (healthy)     6379/tcp
+ruth-mysql-demo               mysql:8.0                              Up 2 weeks               33060/tcp, 0.0.0.0:3307->3306/tcp, [::]:3307->3306/tcp

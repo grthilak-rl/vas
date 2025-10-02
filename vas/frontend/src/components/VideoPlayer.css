@@ -1,0 +1,135 @@
+/* VideoPlayer Component Styles */
+
+.video-player-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.video-player-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.video-player-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.video-player-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.video-player-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.video-player-video-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.video-player-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-player-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  gap: 8px;
+}
+
+.video-player-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* Standardized Button Styles */
+.video-player-button {
+  min-width: 100px !important;
+  min-height: 36px !important;
+  padding: 8px 16px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.video-player-button-primary {
+  background-color: #1976d2 !important;
+  color: white !important;
+  border: 1px solid #1976d2 !important;
+}
+
+.video-player-button-primary:hover {
+  background-color: #1565c0 !important;
+  border-color: #1565c0 !important;
+}
+
+.video-player-button-secondary {
+  background-color: transparent !important;
+  color: #1976d2 !important;
+  border: 1px solid #1976d2 !important;
+}
+
+.video-player-button-secondary:hover {
+  background-color: rgba(25, 118, 210, 0.04) !important;
+}
+
+.video-player-button-snapshot {
+  background-color: transparent !important;
+  color: #9c27b0 !important;
+  border: 1px solid #9c27b0 !important;
+}
+
+.video-player-button-snapshot:hover {
+  background-color: rgba(156, 39, 176, 0.04) !important;
+}
+
+.video-player-button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .video-player-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .video-player-button {
+    width: 100% !important;
+    max-width: 200px !important;
+  }
+}

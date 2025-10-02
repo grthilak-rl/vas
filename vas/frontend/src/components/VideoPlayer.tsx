@@ -8,6 +8,7 @@ import {
   Chip,
   CircularProgress,
   Alert,
+  Snackbar,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -15,7 +16,11 @@ import {
   Fullscreen,
   Videocam,
   Error,
+  CameraAlt,
 } from '@mui/icons-material';
+import './VideoPlayer.css';
+import { useMutation } from '@tanstack/react-query';
+import apiService from '../services/api';
 
 // Declare global Janus types
 declare global {
@@ -47,6 +52,99 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [streamStatus, setStreamStatus] = useState<'idle' | 'connecting' | 'playing' | 'error'>('idle');
   const [janus, setJanus] = useState<any>(null);
   const [streaming, setStreaming] = useState<any>(null);
+  const [snapshotSuccess, setSnapshotSuccess] = useState(false);
+  const [snapshotError, setSnapshotError] = useState<string | null>(null);
+  const [fps, setFps] = useState<number | null>(null);
+  const fpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Snapshot capture mutation
+  const captureSnapshotMutation = useMutation({
+    mutationFn: (deviceId: string) => apiService.captureSnapshot(deviceId),
+    onSuccess: () => {
+      setSnapshotSuccess(true);
+      setSnapshotError(null);
+    },
+    onError: (error: any) => {
+      setSnapshotError(error.response?.data?.detail || 'Failed to capture snapshot');
+      setSnapshotSuccess(false);
+    },
+  });
+
+  // FPS monitoring function
+  const getFPS = async (): Promise<number | null> => {
+    if (!videoRef.current || !videoRef.current.srcObject) {
+      return null;
+    }
+
+    try {
+      const videoElement = videoRef.current;
+      const stream = videoElement.srcObject as MediaStream;
+      const videoTrack = stream.getVideoTracks()[0];
+      
+      if (!videoTrack) {
+        return null;
+      }
+
+      // Use RTCPeerConnection to get stats
+      const pc = new RTCPeerConnection();
+      pc.addTrack(videoTrack, stream);
+      
+      const stats = await pc.getStats();
+      let fpsValue: number | null = null;
+
+      stats.forEach((report: any) => {
+        if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+          // Calculate FPS from frame rate
+          if (report.framesPerSecond !== undefined) {
+            fpsValue = Math.round(report.framesPerSecond);
+          } else if (report.framesDecoded !== undefined && report.timestamp !== undefined) {
+            // Fallback: calculate from frames decoded over time
+            const currentTime = Date.now();
+            const timeDiff = (currentTime - (report.timestamp || currentTime)) / 1000;
+            if (timeDiff > 0) {
+              fpsValue = Math.round(report.framesDecoded / timeDiff);
+            }
+          }
+        }
+      });
+
+      pc.close();
+      return fpsValue;
+    } catch (error) {
+      console.warn('Failed to get FPS stats:', error);
+      return null;
+    }
+  };
+
+  // Start FPS monitoring
+  const startFPSMonitoring = () => {
+    if (fpsIntervalRef.current) {
+      clearInterval(fpsIntervalRef.current);
+    }
+
+    fpsIntervalRef.current = setInterval(async () => {
+      const currentFPS = await getFPS();
+      setFps(currentFPS);
+    }, 1000); // Update every second
+  };
+
+  // Stop FPS monitoring
+  const stopFPSMonitoring = () => {
+    if (fpsIntervalRef.current) {
+      clearInterval(fpsIntervalRef.current);
+      fpsIntervalRef.current = null;
+    }
+    setFps(null);
+  };
+
+  // Cleanup effect for FPS monitoring
+  useEffect(() => {
+    return () => {
+      if (fpsIntervalRef.current) {
+        clearInterval(fpsIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Load Janus libraries
   useEffect(() => {
@@ -189,6 +287,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                         console.log(`Video playing for ${deviceName}!`);
                         setStreamStatus('playing');
                         setIsPlaying(true);
+                        // Start FPS monitoring when video starts playing
+                        startFPSMonitoring();
                       }).catch((error: any) => {
                         if (error.name !== 'AbortError') {
                           console.error(`Video play failed for ${deviceName}:`, error);
@@ -208,6 +308,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               }
               setStreamStatus('idle');
               setIsPlaying(false);
+              // Stop FPS monitoring when stream stops
+              stopFPSMonitoring();
             }
           });
         },
@@ -220,6 +322,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           console.log("Janus destroyed");
           setStreamStatus('idle');
           setIsPlaying(false);
+          // Stop FPS monitoring when Janus is destroyed
+          stopFPSMonitoring();
         }
       });
     } catch (error) {
@@ -243,6 +347,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setIsPlaying(false);
     setStreamStatus('idle');
     setError(null);
+    // Stop FPS monitoring when stream stops
+    stopFPSMonitoring();
     if (onStopStream) onStopStream();
   };
 
@@ -254,6 +360,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         videoRef.current.requestFullscreen();
       }
     }
+  };
+
+  const handleTakeSnapshot = () => {
+    captureSnapshotMutation.mutate(deviceId);
   };
 
   const getStatusColor = () => {
@@ -283,55 +393,52 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6" noWrap>
+    <Card className="video-player-card">
+      <CardContent className="video-player-content">
+        <Box className="video-player-header">
+          <Typography variant="h6" noWrap className="video-player-title">
             {deviceName}
           </Typography>
-          <Chip
-            icon={getStatusIcon()}
-            label={streamStatus}
-            color={getStatusColor() as any}
-            size="small"
-          />
+          <Box display="flex" alignItems="center" gap={1}>
+            <Chip
+              icon={getStatusIcon()}
+              label={streamStatus}
+              color={getStatusColor() as any}
+              size="small"
+              sx={{ fontSize: '0.75rem' }}
+            />
+            {fps !== null && (
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                {fps} fps
+              </Typography>
+            )}
+          </Box>
         </Box>
 
         {/* Video Container */}
-        <Box
-          sx={{
-            flex: 1,
-            backgroundColor: '#000',
-            borderRadius: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            minHeight: 200,
-          }}
-        >
+        <Box className="video-player-video-container">
           {isLoading && (
-            <Box display="flex" flexDirection="column" alignItems="center">
+            <Box className="video-player-placeholder">
               <CircularProgress />
-              <Typography variant="body2" color="white" mt={1}>
+              <Typography variant="body2" color="white">
                 Connecting...
               </Typography>
             </Box>
           )}
 
           {error && (
-            <Box display="flex" flexDirection="column" alignItems="center">
+            <Box className="video-player-placeholder">
               <Error sx={{ color: 'error.main', fontSize: 48 }} />
-              <Typography variant="body2" color="error.main" mt={1}>
+              <Typography variant="body2" color="error.main">
                 {error}
               </Typography>
             </Box>
           )}
 
           {!isLoading && !error && streamStatus === 'idle' && (
-            <Box display="flex" flexDirection="column" alignItems="center">
+            <Box className="video-player-placeholder">
               <Videocam sx={{ color: 'grey.500', fontSize: 48 }} />
-              <Typography variant="body2" color="grey.500" mt={1}>
+              <Typography variant="body2" color="grey.500">
                 Click Start to begin streaming
               </Typography>
             </Box>
@@ -339,10 +446,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
           <video
             ref={videoRef}
+            className="video-player-video"
             style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
               display: isPlaying ? 'block' : 'none',
             }}
             autoPlay
@@ -352,35 +457,48 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </Box>
 
         {/* Controls */}
-        <Box display="flex" justifyContent="center" gap={1} mt={2}>
+        <Box className="video-player-controls">
           {!isPlaying ? (
             <Button
               variant="contained"
               startIcon={<PlayArrow />}
               onClick={handleStartStream}
               disabled={isLoading}
+              className="video-player-button video-player-button-primary"
             >
-              {webrtcUrl ? 'Start Stream' : 'Start Stream'}
+              Start Stream
             </Button>
           ) : (
-            <Button
-              variant="outlined"
-              startIcon={<Stop />}
-              onClick={handleStopStream}
-              disabled={isLoading}
-            >
-              Stop Stream
-            </Button>
-          )}
+            <>
+              <Button
+                variant="outlined"
+                startIcon={<Stop />}
+                onClick={handleStopStream}
+                disabled={isLoading}
+                className="video-player-button video-player-button-secondary"
+              >
+                Stop Stream
+              </Button>
 
-          {isPlaying && (
-            <Button
-              variant="outlined"
-              startIcon={<Fullscreen />}
-              onClick={handleFullscreen}
-            >
-              Fullscreen
-            </Button>
+              <Button
+                variant="outlined"
+                startIcon={<Fullscreen />}
+                onClick={handleFullscreen}
+                className="video-player-button video-player-button-secondary"
+              >
+                Fullscreen
+              </Button>
+
+              <Button
+                variant="outlined"
+                startIcon={captureSnapshotMutation.isPending ? <CircularProgress size={16} /> : <CameraAlt />}
+                onClick={handleTakeSnapshot}
+                disabled={captureSnapshotMutation.isPending}
+                className="video-player-button video-player-button-snapshot"
+              >
+                {captureSnapshotMutation.isPending ? 'Capturing...' : 'Snapshot'}
+              </Button>
+            </>
           )}
         </Box>
 
@@ -389,6 +507,30 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             {error}
           </Alert>
         )}
+
+        {/* Snapshot Success/Error Messages */}
+        <Snackbar
+          open={snapshotSuccess}
+          autoHideDuration={3000}
+          onClose={() => setSnapshotSuccess(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity="success" onClose={() => setSnapshotSuccess(false)}>
+            Snapshot captured successfully!
+          </Alert>
+        </Snackbar>
+
+        <Snackbar
+          open={!!snapshotError}
+          autoHideDuration={5000}
+          onClose={() => setSnapshotError(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity="error" onClose={() => setSnapshotError(null)}>
+            {snapshotError}
+          </Alert>
+        </Snackbar>
+
       </CardContent>
     </Card>
   );
