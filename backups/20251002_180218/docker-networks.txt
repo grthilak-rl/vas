@@ -1,8 +1,0 @@
-NETWORK ID     NAME                                   DRIVER    SCOPE
-1d5c7cb1e359   bridge                                 bridge    local
-72e1b6f92363   edge_network_001                       bridge    local
-4edd462c5a81   host                                   host      local
-2fbc6a43958a   none                                   null      local
-f4c269dff981   ruth-ai-monitor_ruth-monitor-network   bridge    local
-7309dad2a213   vas-test_integrated_network            bridge    local
-bf28c4d08f78   vas_integrated_network                 bridge    local
