@@ -159,6 +159,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           return;
         }
         
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsHost = window.location.host;
+        
         window.Janus.init({
           debug: "all",
           callback: function() {
@@ -171,7 +174,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           error: function(error: any) {
             console.error("Janus initialization error:", error);
             setError("Failed to initialize Janus: " + error);
-          }
+          },
+          websockets: {
+            url: `${wsProtocol}//${wsHost}/janus-ws`,
+            subprotocol: "janus-protocol"
+          },
+          iceServers: [{urls: "stun:stun.l.google.com:19302"}]
         });
       } else {
         console.log('Janus library not loaded yet, retrying...');
@@ -201,9 +209,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       // Get the mountpoint ID from device ID mapping
       const mountpointId = deviceId === '05a9a734-f76d-4f45-9b0e-1e9c89b43e2c' ? 1 : 2;
 
-      // Connect to Janus WebSocket
+      // Get WebSocket URL components
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsHost = window.location.host;
+
+      // Connect to Janus WebSocket via Nginx proxy
       const janusInstance = new window.Janus({
-        server: 'ws://10.30.250.245:8188',
+        server: `${wsProtocol}//${wsHost}/janus-ws`,
         success: function() {
           console.log("Connected to Janus WebSocket");
           

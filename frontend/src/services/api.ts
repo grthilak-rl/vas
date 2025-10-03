@@ -19,7 +19,8 @@ class ApiService {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+    // Use relative URL to go through Nginx proxy, or environment variable if set
+    this.baseURL = process.env.REACT_APP_API_URL || '/api';
     this.api = axios.create({
       baseURL: this.baseURL,
       headers: {
@@ -57,7 +58,7 @@ class ApiService {
 
   // Authentication
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response: AxiosResponse<LoginResponse> = await this.api.post('/api/auth/login-json', credentials);
+    const response: AxiosResponse<LoginResponse> = await this.api.post('/auth/login-json', credentials);
     return response.data;
   }
 
@@ -68,7 +69,7 @@ class ApiService {
 
   // Health Check
   async getHealth(): Promise<HealthStatus> {
-    const response: AxiosResponse<HealthStatus> = await this.api.get('/api/health');
+    const response: AxiosResponse<HealthStatus> = await this.api.get('/health');
     return response.data;
   }
 
@@ -88,31 +89,31 @@ class ApiService {
       ...filters,
     });
     
-    const response: AxiosResponse<any> = await this.api.get(`/api/devices/?${params}`);
+    const response: AxiosResponse<any> = await this.api.get(`/devices/?${params}`);
     return response.data;
   }
 
   async getDevice(id: string): Promise<Device> {
-    const response: AxiosResponse<Device> = await this.api.get(`/api/devices/${id}`);
+    const response: AxiosResponse<Device> = await this.api.get(`/devices/${id}`);
     return response.data;
   }
 
   async createDevice(device: CreateDeviceRequest): Promise<Device> {
-    const response: AxiosResponse<Device> = await this.api.post('/api/devices', device);
+    const response: AxiosResponse<Device> = await this.api.post('/devices', device);
     return response.data;
   }
 
   async updateDevice(id: string, device: UpdateDeviceRequest): Promise<Device> {
-    const response: AxiosResponse<Device> = await this.api.patch(`/api/devices/${id}`, device);
+    const response: AxiosResponse<Device> = await this.api.patch(`/devices/${id}`, device);
     return response.data;
   }
 
   async deleteDevice(id: string): Promise<void> {
-    await this.api.delete(`/api/devices/${id}`);
+    await this.api.delete(`/devices/${id}`);
   }
 
   async validateDevice(rtspUrl: string, username: string = '', password: string = ''): Promise<any> {
-    const response: AxiosResponse = await this.api.post('/api/devices/validate', {
+    const response: AxiosResponse = await this.api.post('/devices/validate', {
       rtsp_url: rtspUrl,
       username,
       password,
@@ -121,66 +122,66 @@ class ApiService {
   }
 
   async getDeviceStatus(id: string): Promise<any> {
-    const response: AxiosResponse = await this.api.get(`/api/devices/${id}/status`);
+    const response: AxiosResponse = await this.api.get(`/devices/${id}/status`);
     return response.data;
   }
 
   // Discovery
   async startDiscovery(request: DiscoveryRequest): Promise<DiscoveryTask> {
-    const response: AxiosResponse<DiscoveryTask> = await this.api.post('/api/discover', request);
+    const response: AxiosResponse<DiscoveryTask> = await this.api.post('/discover', request);
     return response.data;
   }
 
   async getDiscoveryTask(taskId: string): Promise<DiscoveryTask> {
-    const response: AxiosResponse<DiscoveryTask> = await this.api.get(`/api/discover/${taskId}`);
+    const response: AxiosResponse<DiscoveryTask> = await this.api.get(`/discover/${taskId}`);
     return response.data;
   }
 
   async getDiscoveryTasks(): Promise<DiscoveryTask[]> {
-    const response: AxiosResponse<DiscoveryTask[]> = await this.api.get('/api/discover');
+    const response: AxiosResponse<DiscoveryTask[]> = await this.api.get('/discover');
     return response.data;
   }
 
   // Streams
   async getStreams(): Promise<Stream[]> {
-    const response: AxiosResponse<Stream[]> = await this.api.get('/api/streams');
+    const response: AxiosResponse<Stream[]> = await this.api.get('/streams');
     return response.data;
   }
 
   async startStream(deviceId: string): Promise<StreamResponse> {
-    const response: AxiosResponse<StreamResponse> = await this.api.post(`/api/streams/${deviceId}/start`);
+    const response: AxiosResponse<StreamResponse> = await this.api.post(`/streams/${deviceId}/start`);
     return response.data;
   }
 
   async stopStream(deviceId: string): Promise<void> {
-    await this.api.post(`/api/streams/${deviceId}/stop`);
+    await this.api.post(`/streams/${deviceId}/stop`);
   }
 
   async getStreamStatus(deviceId: string): Promise<StreamResponse> {
-    const response: AxiosResponse<StreamResponse> = await this.api.get(`/api/streams/${deviceId}/status`);
+    const response: AxiosResponse<StreamResponse> = await this.api.get(`/streams/${deviceId}/status`);
     return response.data;
   }
 
   async getStreamHealth(): Promise<any> {
-    const response: AxiosResponse = await this.api.get('/api/streams/health/streams');
+    const response: AxiosResponse = await this.api.get('/streams/health/streams');
     return response.data;
   }
 
   // Janus Health
   async getJanusHealth(): Promise<any> {
-    const response: AxiosResponse = await this.api.get('/api/streams/janus/health');
+    const response: AxiosResponse = await this.api.get('/streams/janus/health');
     return response.data;
   }
 
   // Metrics
   async getMetrics(): Promise<any> {
-    const response: AxiosResponse = await this.api.get('/api/metrics');
+    const response: AxiosResponse = await this.api.get('/metrics');
     return response.data;
   }
 
   // Snapshots
   async captureSnapshot(deviceId: string): Promise<Snapshot> {
-    const response: AxiosResponse<Snapshot> = await this.api.post(`/api/snapshots/capture/${deviceId}`);
+    const response: AxiosResponse<Snapshot> = await this.api.post(`/snapshots/capture/${deviceId}`);
     return response.data;
   }
 
@@ -190,27 +191,27 @@ class ApiService {
       params.device_id = deviceId;
     }
     
-    const response: AxiosResponse<SnapshotListResponse> = await this.api.get(`/api/snapshots`, {
+    const response: AxiosResponse<SnapshotListResponse> = await this.api.get(`/snapshots`, {
       params
     });
     return response.data;
   }
 
   async getLatestSnapshot(deviceId: string): Promise<Snapshot> {
-    const response: AxiosResponse<Snapshot> = await this.api.get(`/api/snapshots/device/${deviceId}/latest`);
+    const response: AxiosResponse<Snapshot> = await this.api.get(`/snapshots/device/${deviceId}/latest`);
     return response.data;
   }
 
   async deleteSnapshot(snapshotId: string): Promise<void> {
-    await this.api.delete(`/api/snapshots/${snapshotId}`);
+    await this.api.delete(`/snapshots/${snapshotId}`);
   }
 
   getSnapshotImageUrl(snapshotId: string): string {
-    return `${this.baseURL}/api/snapshots/${snapshotId}/binary`;
+    return `${this.baseURL}/snapshots/${snapshotId}/binary`;
   }
 
   async getSnapshotImageBinary(snapshotId: string): Promise<Blob> {
-    const response: AxiosResponse<Blob> = await this.api.get(`/api/snapshots/${snapshotId}/binary`, {
+    const response: AxiosResponse<Blob> = await this.api.get(`/snapshots/${snapshotId}/binary`, {
       responseType: 'blob' // Important for binary data
     });
     return response.data;
