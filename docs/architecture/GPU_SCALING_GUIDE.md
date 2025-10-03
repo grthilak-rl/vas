@@ -220,7 +220,8 @@ Step 1: NPU Configuration
 export OPENVINO_NPU_ENABLED=true
 export NPU_DEVICE_PATH=/dev/accel/accel0
 
-# Configure AI inference service for NPU
+# Note: AI inference services should be deployed as separate applications
+# This configuration is for reference when implementing external AI services
 ai-inference-npu:
   environment:
     - AI_DEVICE=NPU
@@ -265,7 +266,7 @@ Expected Results:
 
 Multi-Model NPU Configuration:
 ```
-# Advanced NPU utilization
+# Advanced NPU utilization (for external AI services)
 ai-inference-advanced:
   environment:
     - NPU_PRIMARY_MODEL=yolo_detection

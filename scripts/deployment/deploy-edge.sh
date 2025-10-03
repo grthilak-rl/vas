@@ -129,8 +129,6 @@ create_directories() {
         "recordings"
         "config/ssl"
         "edge-api"
-        "ai-models"
-        "ai-inference"
         "logs"
         "backups"
         "frontend-dist"

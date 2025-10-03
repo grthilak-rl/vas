@@ -191,40 +191,9 @@ services:
       timeout: 10s
       retries: 3
 
-  # Future: YOLO Inference Service (Intel Arc optimized)
-  yolo-inference:
-    image: intel/openvino:2024.0.0-dev  # Intel OpenVINO for Arc GPU
-    container_name: yolo-inference-${UNIT_ID:-001}
-    volumes:
-      - ./ai-models:/app/models:ro
-      - ./ai-inference:/app:ro
-      - /dev/dri:/dev/dri  # Intel Arc GPU access
-    environment:
-      - INTEL_GPU_ENABLED=true
-      - MAX_CAMERAS=6
-      - INFERENCE_MODEL=yolov8n  # Start with nano model for testing
-      - INFERENCE_RESOLUTION=1080p
-      - INFERENCE_FPS=30
-      - UNIT_ID=${UNIT_ID:-001}
-    deploy:
-      resources:
-        limits:
-          cpus: '4.0'      # 4 cores for YOLO preprocessing
-          memory: 4G       # 4GB for model weights + inference
-        reservations:
-          cpus: '2.0'
-          memory: 2G
-    devices:
-      - /dev/dri:/dev/dri  # Intel Arc GPU access
-
-    restart: unless-stopped
-    profiles:
-      - ai-enabled  # Only start when AI is needed: docker-compose --profile ai-enabled up
-    healthcheck:
-      test: ["CMD", "python", "/app/health_check.py"]
-      interval: 60s
-      timeout: 30s
-      retries: 3
+  # Note: AI inference services should be deployed as separate applications
+  # VAS focuses on video processing and streaming only
+  # AI applications can consume video feeds via VAS APIs
 
   # System monitoring for performance optimization
   edge-monitor:

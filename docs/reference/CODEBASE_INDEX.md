@@ -112,12 +112,13 @@ vas/
 - `GET /metrics` - Performance metrics
 - `POST /api/streams/configure` - Stream setup
 
-### 5. **AI Inference Engine (Future)**
-- **Purpose**: Real-time object detection using YOLO
-- **Location**: `ai-inference/`, `ai-models/`
-- **Planned Features**:
-  - Real-time YOLO object detection
-  - Intel Arc 140T GPU acceleration
+### 5. **AI Integration (External)**
+- **Purpose**: AI applications can consume VAS video feeds
+- **Integration**: Via VAS APIs and WebRTC streams
+- **Note**: AI inference should be implemented as separate applications
+  - VAS provides video processing and streaming
+  - AI applications consume video feeds via APIs
+  - Separation of concerns for better maintainability
   - 1080p/30fps processing capability
   - Object tracking and analytics
 

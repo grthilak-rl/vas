@@ -33,7 +33,7 @@ This document explains the purpose and functionality of the key automation scrip
    - Ensures consistent configuration across deployments
 
 4. **Service Orchestration**
-   - Starts optimized services: `janus-edge`, `ai-inference`, `edge-api`, `vas-backend-edge`, `vas-frontend-edge`
+   - Starts optimized services: `janus-edge`, `edge-api`, `vas-backend-edge`, `vas-frontend-edge`
    - Configures 6-camera streaming (172.16.16.122-127)
    - Sets up resource limits for CPU/GPU/memory
    - Manages Docker container lifecycle
