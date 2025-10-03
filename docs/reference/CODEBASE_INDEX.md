@@ -10,7 +10,7 @@ The Video Analytics System (VAS) is a distributed edge computing platform for re
 vas/
 ├── 🐳 docker-compose.yml                    # Main 2-camera setup
 ├── 🐳 docker-compose.asrock-edge.yml        # ASRock edge unit setup
-├── 🚀 deploy-edge.sh                        # Edge deployment script
+├── 🚀 scripts/deployment/deploy-edge.sh      # Edge deployment script
 ├── 🧪 test-local-regression.sh              # Regression testing
 ├── 📄 test-camera-viewer.html               # HTML test page
 ├── 📄 adapter.js, janus.js                  # WebRTC libraries
@@ -153,7 +153,7 @@ vas/
 
 ### **Deployment Scripts**
 
-1. **`deploy-edge.sh`** - ASRock Edge Deployment
+1. **`scripts/deployment/deploy-edge.sh`** - ASRock Edge Deployment
    - Automated deployment for ASRock iEP-7040E-024 units
    - Hardware-optimized configuration
    - Unit management with unique IDs
@@ -191,7 +191,7 @@ docker-compose up --build -d
 
 **Edge Deployment**:
 ```bash
-./deploy-edge.sh --unit-id 001
+./scripts/deployment/deploy-edge.sh --unit-id 001
 ```
 
 ## 📊 **Performance Characteristics**

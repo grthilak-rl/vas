@@ -127,7 +127,7 @@ create_directories() {
     
     directories=(
         "recordings"
-        "ssl"
+        "config/ssl"
         "edge-api"
         "ai-models"
         "ai-inference"
@@ -145,14 +145,14 @@ create_directories() {
 
 # Generate SSL certificates for production
 generate_ssl_certificates() {
-    if [ ! -f "ssl/edge-cert.pem" ]; then
+    if [ ! -f "config/ssl/edge-cert.pem" ]; then
         log "Generating self-signed SSL certificates..."
         
-        openssl req -x509 -newkey rsa:4096 -keyout ssl/edge-key.pem -out ssl/edge-cert.pem \
+        openssl req -x509 -newkey rsa:4096 -keyout config/ssl/edge-key.pem -out config/ssl/edge-cert.pem \
             -days 365 -nodes -subj "/C=US/ST=State/L=City/O=Company/CN=edge-unit-$UNIT_ID"
         
-        chmod 600 ssl/edge-key.pem
-        chmod 644 ssl/edge-cert.pem
+        chmod 600 config/ssl/edge-key.pem
+        chmod 644 config/ssl/edge-cert.pem
         
         success "SSL certificates generated"
     else

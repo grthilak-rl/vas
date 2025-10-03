@@ -134,8 +134,8 @@ services:
       - "80:80"
       - "443:443"  # HTTPS ready for production
     volumes:
-      - ./nginx-edge.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro  # SSL certificates for production
+      - ./config/nginx/nginx-edge.conf:/etc/nginx/nginx.conf:ro
+      - ./config/ssl:/etc/nginx/ssl:ro  # SSL certificates for production
       - ./frontend-dist:/usr/share/nginx/html:ro  # Frontend served directly from host
     depends_on:
       - vas-backend-edge

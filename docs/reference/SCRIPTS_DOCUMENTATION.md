@@ -47,16 +47,16 @@ This document explains the purpose and functionality of the key automation scrip
 **Usage Examples:**
 ```bash
 # Basic deployment with default settings
-./deploy-edge.sh
+./scripts/deployment/deploy-edge.sh
 
 # Deploy with specific unit ID and camera count
-./deploy-edge.sh --unit-id 001 --cameras 6
+./scripts/deployment/deploy-edge.sh --unit-id 001 --cameras 6
 
 # Update existing deployment
-./deploy-edge.sh --unit-id 001 --update
+./scripts/deployment/deploy-edge.sh --unit-id 001 --update
 
 # Get help
-./deploy-edge.sh --help
+./scripts/deployment/deploy-edge.sh --help
 ```
 
 **When to Use:** 
@@ -129,16 +129,16 @@ This document explains the purpose and functionality of the key automation scrip
 **Usage Examples:**
 ```bash
 # Run all regression tests
-./test-local-regression.sh
+./scripts/testing/test-local-regression.sh
 
 # Run with verbose output
-./test-local-regression.sh --verbose
+./scripts/testing/test-local-regression.sh --verbose
 
 # Generate detailed report
-./test-local-regression.sh --report
+./scripts/testing/test-local-regression.sh --report
 
 # Quick syntax validation only
-./test-local-regression.sh --quick
+./scripts/testing/test-local-regression.sh --quick
 ```
 
 **When to Use:**
@@ -161,7 +161,7 @@ This document explains the purpose and functionality of the key automation scrip
 
 2. **Test for Regressions**
    ```bash
-   ./test-local-regression.sh
+   ./scripts/testing/test-local-regression.sh
    ```
    - Ensures existing 2-camera setup still works
    - Validates configuration syntax
@@ -169,7 +169,7 @@ This document explains the purpose and functionality of the key automation scrip
 
 3. **Deploy to Production (if tests pass)**
    ```bash
-   ./deploy-edge.sh --unit-id 001 --cameras 6
+   ./scripts/deployment/deploy-edge.sh --unit-id 001 --cameras 6
    ```
    - Deploys optimized configuration to ASRock hardware
    - Sets up 6-camera streaming
@@ -179,20 +179,20 @@ This document explains the purpose and functionality of the key automation scrip
 
 **Single Unit Deployment:**
 ```bash
-./deploy-edge.sh --unit-id 001
+./scripts/deployment/deploy-edge.sh --unit-id 001
 ```
 
 **Multiple Unit Deployment:**
 ```bash
 # Deploy to multiple ASRock units
-./deploy-edge.sh --unit-id 001  # First unit
-./deploy-edge.sh --unit-id 002  # Second unit  
-./deploy-edge.sh --unit-id 050  # 50th unit
+./scripts/deployment/deploy-edge.sh --unit-id 001  # First unit
+./scripts/deployment/deploy-edge.sh --unit-id 002  # Second unit  
+./scripts/deployment/deploy-edge.sh --unit-id 050  # 50th unit
 ```
 
 **Update Existing Deployment:**
 ```bash
-./deploy-edge.sh --unit-id 001 --update
+./scripts/deployment/deploy-edge.sh --unit-id 001 --update
 ```
 
 ---

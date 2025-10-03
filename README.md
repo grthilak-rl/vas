@@ -23,8 +23,8 @@ This system provides real-time RTSP camera feed streaming through WebRTC using J
 vas-test/
 ├── 🐳 docker-compose.yml                    # Main 2-camera setup
 ├── 🐳 docker-compose.asrock-edge.yml        # ASRock edge unit setup
-├── 🚀 deploy-edge.sh                        # Edge deployment script
-├── 🧪 test-local-regression.sh              # Regression testing
+├── 🚀 scripts/deployment/deploy-edge.sh      # Edge deployment script
+├── 🧪 scripts/testing/test-local-regression.sh # Regression testing
 ├── 📄 test-camera-viewer.html               # HTML test page
 ├── 📄 adapter.js, janus.js                  # WebRTC libraries
 │
@@ -52,8 +52,8 @@ vas-test/
 │   ├── main.py                            # FastAPI edge service
 │   └── Dockerfile                         # Edge API container
 │
-├── ⚙️ nginx.conf                           # Main nginx config
-└── ⚙️ nginx-edge.conf                      # ASRock nginx config
+├── ⚙️ config/nginx/nginx-dev.conf          # Main nginx config
+└── ⚙️ config/nginx/nginx-edge.conf         # ASRock nginx config
 ```
 
 ## 🚀 **Quick Start**
@@ -75,10 +75,10 @@ cd vas/backend && python3 add_sample_devices.py
 ### **ASRock Edge Unit Deployment**
 ```bash
 # Deploy to ASRock unit
-./deploy-edge.sh
+./scripts/deployment/deploy-edge.sh
 
 # Test regression
-./test-local-regression.sh
+./scripts/testing/test-local-regression.sh
 ```
 
 ## 📹 **Camera Configuration**
@@ -113,7 +113,7 @@ cd vas/backend && python3 add_sample_devices.py
 
 ### **Regression Testing**
 ```bash
-./test-local-regression.sh
+./scripts/testing/test-local-regression.sh
 ```
 
 ### **Manual Testing**

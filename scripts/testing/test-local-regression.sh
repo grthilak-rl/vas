@@ -183,10 +183,10 @@ test_edge_config() {
     local required_files=(
         "janus/config/edge-janus.jcfg"
         "janus/config/janus.plugin.streaming.edge.jcfg"
-        "nginx-edge.conf"
+        "config/nginx/nginx-edge.conf"
         "edge-api/main.py"
         "edge-api/requirements.txt"
-        "deploy-edge.sh"
+        "scripts/deployment/deploy-edge.sh"
     )
     
     for file in "${required_files[@]}"; do
@@ -281,7 +281,7 @@ System Information:
 Next Steps:
 1. If all tests passed: Ready for ASRock deployment
 2. If tests failed: Review issues before proceeding
-3. Deploy to ASRock using: ./deploy-edge.sh --unit-id 001
+3. Deploy to ASRock using: ./scripts/deployment/deploy-edge.sh --unit-id 001
 
 EOF
 
@@ -352,7 +352,7 @@ main() {
         success "🎉 All regression tests passed! Ready for ASRock deployment."
         echo
         echo "Next steps:"
-        echo "1. Deploy to ASRock unit: ./deploy-edge.sh --unit-id 001"
+        echo "1. Deploy to ASRock unit: ./scripts/deployment/deploy-edge.sh --unit-id 001"
         echo "2. Test with 6 cameras on actual hardware"
         echo "3. Monitor performance with: curl http://localhost:3001/metrics"
         return 0
