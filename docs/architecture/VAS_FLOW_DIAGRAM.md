@@ -134,11 +134,11 @@ RUNTIME PHASE:
 │   └── Accessed: API requests
 │   └── Purpose: Data validation schemas
 │
-├── vas/frontend/public/index.html
+├── frontend/public/index.html
 │   └── Accessed: Browser load
 │   └── Purpose: Janus library loading
 │
-└── vas/frontend/src/components/VideoPlayer.tsx
+└── frontend/src/components/VideoPlayer.tsx
     └── Accessed: Component mount
     └── Purpose: WebRTC implementation
 ```
@@ -170,8 +170,8 @@ NO VIDEO STREAMS:
 
 FRONTEND CAN'T CONNECT:
 ├── Check: nginx-edge.conf (proxy rules)
-├── Check: vas/frontend/public/index.html (Janus libraries)
-├── Check: vas/frontend/src/components/VideoPlayer.tsx (WebRTC code)
+├── Check: frontend/public/index.html (Janus libraries)
+├── Check: frontend/src/components/VideoPlayer.tsx (WebRTC code)
 └── Command: curl -s http://localhost:8088/janus/info
 
 BACKEND API ERRORS:

@@ -174,7 +174,7 @@ setup_frontend() {
     log "Setting up frontend for direct serving..."
     
     # Check if frontend source exists
-    if [ ! -d "vas/frontend" ] || [ -z "$(ls -A vas/frontend)" ]; then
+    if [ ! -d "frontend" ] || [ -z "$(ls -A frontend)" ]; then
         warning "Frontend directory is empty or doesn't exist. Creating a basic frontend..."
         
         # Create a basic HTML frontend for testing
@@ -312,7 +312,7 @@ EOF
         
         # Check if Node.js is available
         if command -v npm &> /dev/null; then
-            cd vas/frontend
+            cd frontend
             
             # Install dependencies if package.json exists
             if [ -f "package.json" ]; then
@@ -337,7 +337,7 @@ EOF
                 success "Frontend built and copied to frontend-dist/"
             else
                 warning "No package.json found. Copying source files directly."
-                cp -r vas/frontend/* frontend-dist/
+                cp -r frontend/* frontend-dist/
                 success "Frontend source copied to frontend-dist/"
             fi
         else

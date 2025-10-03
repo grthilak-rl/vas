@@ -88,7 +88,7 @@ DELETE /api/snapshots/{snapshot_id}      - Delete snapshot
 ## 📁 **File Structure**
 
 ```
-vas/backend/
+backend/
 ├── app/
 │   ├── models.py              # Add Snapshot model
 │   ├── schemas.py             # Add snapshot schemas

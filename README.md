@@ -37,16 +37,16 @@ vas-test/
 │   ├── api/                                # Custom Janus API service
 │   └── Dockerfile                          # Janus container
 │
-├── 🏭 vas/                                  # Video Analytics System
-│   ├── backend/                            # FastAPI application
-│   │   ├── app/                           # Core application
-│   │   ├── add_sample_devices.py          # Database population
-│   │   └── Dockerfile                     # Backend container
-│   └── frontend/                          # React application
-│       ├── src/                           # Source code
-│       │   ├── components/SimpleVideoPlayer.tsx  # WebRTC video component
-│       │   └── pages/Streams.tsx          # Camera streams page
-│       └── Dockerfile                     # Frontend container
+├── 🏭 backend/                             # FastAPI application
+│   ├── app/                               # Core application
+│   ├── add_sample_devices.py              # Database population
+│   └── Dockerfile                         # Backend container
+│
+├── 🌐 frontend/                           # React application
+│   ├── src/                               # Source code
+│   │   ├── components/SimpleVideoPlayer.tsx  # WebRTC video component
+│   │   └── pages/Streams.tsx              # Camera streams page
+│   └── Dockerfile                         # Frontend container
 │
 ├── 🌐 edge-api/                            # ASRock Edge API
 │   ├── main.py                            # FastAPI edge service

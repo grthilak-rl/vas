@@ -224,7 +224,7 @@ docker exec janus_gateway env | grep JANUS
 - `janus/config/janus.plugin.streaming.jcfg` - Stream definitions
 - `janus/config/janus.jcfg` - Main Janus config
 - `docker-compose.yml` - Service definitions
-- `vas/backend/app/core/constants.py` - Device mappings
+- `backend/app/core/constants.py` - Device mappings
 
 ### **Backup Files**
 - `backups/latest-working/` - Latest working configuration

@@ -86,8 +86,8 @@ services:
 
   # VAS Backend optimized for edge deployment
   vas-backend-edge:
-    build: 
-      context: ./vas/backend
+    build:
+      context: ./backend
       dockerfile: Dockerfile
     container_name: vas-backend-edge-${UNIT_ID:-001}
     network_mode: host  # Use host network for direct access to Janus

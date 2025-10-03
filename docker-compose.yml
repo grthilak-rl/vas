@@ -14,7 +14,7 @@ services:
       POSTGRES_PASSWORD: vas_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./vas/backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     networks:
@@ -86,7 +86,7 @@ services:
   # VAS Backend API
   vas-backend:
     build:
-      context: ./vas/backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: vas_backend
     environment:
@@ -125,7 +125,7 @@ services:
   # VAS Frontend (React)
   vas-frontend:
     build:
-      context: ./vas/frontend
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: vas_frontend
     ports:

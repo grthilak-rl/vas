@@ -7,16 +7,16 @@ The snapshot feature has been successfully implemented as a non-destructive addi
 ## 📁 **Files Added/Modified**
 
 ### **New Files Created**
-- `vas/backend/migrations/versions/003_add_snapshots_table.py` - Database migration
-- `vas/backend/app/services/snapshot_service.py` - Snapshot capture service
-- `vas/backend/app/api/snapshots.py` - Snapshot API endpoints
+- `backend/migrations/versions/003_add_snapshots_table.py` - Database migration
+- `backend/app/services/snapshot_service.py` - Snapshot capture service
+- `backend/app/api/snapshots.py` - Snapshot API endpoints
 - `test_snapshot_feature.py` - Test script for snapshot functionality
 
 ### **Files Modified**
-- `vas/backend/app/models.py` - Added Snapshot model
-- `vas/backend/app/schemas.py` - Added snapshot schemas
-- `vas/backend/app/main.py` - Added snapshot router
-- `vas/backend/requirements.txt` - Added Pillow dependency
+- `backend/app/models.py` - Added Snapshot model
+- `backend/app/schemas.py` - Added snapshot schemas
+- `backend/app/main.py` - Added snapshot router
+- `backend/requirements.txt` - Added Pillow dependency
 
 ## 🚀 **Deployment Steps**
 

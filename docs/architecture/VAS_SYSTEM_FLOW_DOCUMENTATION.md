@@ -153,9 +153,9 @@ Browser Request → Nginx (Port 80) → Static Files (frontend-dist) → React A
 **Access Point**: Browser load
 
 **Configuration Files Accessed**:
-- `vas/frontend/public/index.html` - Janus library loading
-- `vas/frontend/src/App.tsx` - Main app structure
-- `vas/frontend/src/components/VideoPlayer.tsx` - WebRTC implementation
+- `frontend/public/index.html` - Janus library loading
+- `frontend/src/App.tsx` - Main app structure
+- `frontend/src/components/VideoPlayer.tsx` - WebRTC implementation
 
 **Flow**:
 ```
@@ -249,13 +249,13 @@ Frontend → Janus WebSocket (Port 8188) → Streaming Plugin → RTSP Stream �
 
 ### **Frontend Configuration Files**
 
-#### **`vas/frontend/public/index.html`**
+#### **`frontend/public/index.html`**
 - **Accessed**: Browser load
 - **Purpose**: Janus library loading
 - **Critical Settings**: Janus script tags
 - **Failure Point**: WebRTC functionality unavailable
 
-#### **`vas/frontend/src/components/VideoPlayer.tsx`**
+#### **`frontend/src/components/VideoPlayer.tsx`**
 - **Accessed**: Component mount
 - **Purpose**: WebRTC implementation
 - **Critical Settings**: Janus connection, SDP handling
@@ -316,8 +316,8 @@ Frontend → Janus WebSocket (Port 8188) → Streaming Plugin → RTSP Stream �
 ### **4. Frontend Can't Connect**
 **Check Order**:
 1. `nginx-edge.conf` - Proxy configuration
-2. `vas/frontend/public/index.html` - Janus libraries
-3. `vas/frontend/src/components/VideoPlayer.tsx` - WebRTC code
+2. `frontend/public/index.html` - Janus libraries
+3. `frontend/src/components/VideoPlayer.tsx` - WebRTC code
 4. Backend API availability
 
 **Common Issues**:

@@ -60,7 +60,7 @@ vas/
 
 ### 2. **VAS Backend (FastAPI)**
 - **Purpose**: Device management, authentication, and API orchestration
-- **Location**: `vas/backend/`
+- **Location**: `backend/`
 - **Technology Stack**:
   - Python 3.11 with FastAPI
   - SQLAlchemy ORM with PostgreSQL
@@ -83,7 +83,7 @@ vas/
 
 ### 3. **VAS Frontend (React)**
 - **Purpose**: Web-based user interface for camera monitoring
-- **Location**: `vas/frontend/`
+- **Location**: `frontend/`
 - **Technology Stack**:
   - React 18 with TypeScript
   - Material-UI (MUI) components
@@ -141,7 +141,7 @@ vas/
    - `nginx-edge.conf` - Edge nginx config
 
 4. **Environment Variables**:
-   - `vas/backend/env.example` - Backend environment template
+   - `backend/env.example` - Backend environment template
    - Unit-specific variables in deployment scripts
 
 ### **Camera Configuration**
@@ -240,7 +240,7 @@ docker-compose up --build -d
 
 ### **Testing**
 - **Regression Tests**: `test-local-regression.sh`
-- **API Tests**: `vas/backend/test_api.py`
+- **API Tests**: `backend/test_api.py`
 - **HTML Test Page**: `test-camera-viewer.html`
 - **WebRTC Test**: `webrtc-api-test.html`
 

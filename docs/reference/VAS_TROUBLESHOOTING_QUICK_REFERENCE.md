@@ -25,7 +25,7 @@
 ### **"Janus library not loaded"**
 **Symptoms**: `TypeError: v is not a constructor`, WebRTC errors
 **Quick Check**: Browser console for Janus errors
-**Fix**: Check `vas/frontend/public/index.html` Janus script tags
+**Fix**: Check `frontend/public/index.html` Janus script tags
 
 ## 🔍 **Diagnostic Commands**
 
