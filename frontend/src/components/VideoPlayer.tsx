@@ -211,11 +211,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       // Get WebSocket URL components
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsHost = window.location.host;
+      // In development, connect directly to Janus; in production, use Nginx proxy
+      const wsHost = process.env.NODE_ENV === 'development' ? '172.17.0.1:8188' : window.location.host;
+      const wsPath = process.env.NODE_ENV === 'development' ? '/janus' : '/janus-ws';
 
-      // Connect to Janus WebSocket via Nginx proxy
+      // Connect to Janus WebSocket
       const janusInstance = new window.Janus({
-        server: `${wsProtocol}//${wsHost}/janus-ws`,
+        server: `${wsProtocol}//${wsHost}${wsPath}`,
         success: function() {
           console.log("Connected to Janus WebSocket");
           

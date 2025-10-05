@@ -11,7 +11,10 @@ import {
   StreamResponse,
   HealthStatus,
   Snapshot,
-  SnapshotListResponse
+  SnapshotListResponse,
+  RecordingTimeline,
+  RecordingSegment,
+  RecordingStatus
 } from '../types';
 
 class ApiService {
@@ -19,8 +22,10 @@ class ApiService {
   private baseURL: string;
 
   constructor() {
-    // Use relative URL to go through Nginx proxy, or environment variable if set
-    this.baseURL = process.env.REACT_APP_API_URL || '/api';
+    // Use full URL to backend for development, relative URL for production
+    this.baseURL = process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:8000/api' 
+      : (process.env.REACT_APP_API_URL || '/api');
     this.api = axios.create({
       baseURL: this.baseURL,
       headers: {
@@ -215,6 +220,38 @@ class ApiService {
       responseType: 'blob' // Important for binary data
     });
     return response.data;
+  }
+
+  // Recording API methods
+  async getRecordingTimeline(deviceId: string, hours: number = 24): Promise<RecordingTimeline> {
+    const response: AxiosResponse<RecordingTimeline> = await this.api.get(`/recordings/${deviceId}/timeline`, {
+      params: { hours }
+    });
+    return response.data;
+  }
+
+  async getRecordingSegments(deviceId: string, startTime?: string, endTime?: string, limit: number = 100): Promise<RecordingSegment[]> {
+    const response: AxiosResponse<{ segments: RecordingSegment[] }> = await this.api.get(`/recordings/${deviceId}/segments`, {
+      params: { start_time: startTime, end_time: endTime, limit }
+    });
+    return response.data.segments;
+  }
+
+  async getRecordingStatus(deviceId: string): Promise<RecordingStatus> {
+    const response: AxiosResponse<RecordingStatus> = await this.api.get(`/recordings/${deviceId}/status`);
+    return response.data;
+  }
+
+  async startRecording(deviceId: string): Promise<void> {
+    await this.api.post(`/recordings/${deviceId}/start`);
+  }
+
+  async stopRecording(deviceId: string): Promise<void> {
+    await this.api.post(`/recordings/${deviceId}/stop`);
+  }
+
+  getRecordingSegmentUrl(deviceId: string, segmentId: string): string {
+    return `${this.baseURL}/recordings/${deviceId}/segment/${segmentId}/play`;
   }
 }
 

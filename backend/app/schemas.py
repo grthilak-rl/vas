@@ -134,6 +134,203 @@ class SnapshotResponse(SnapshotBase):
         return v
 
 
+# Recording Schemas
+class RecordingStatus(str, Enum):
+    """Recording status enumeration"""
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    ERROR = "error"
+    STARTING = "starting"
+    STOPPING = "stopping"
+
+
+class RecordingSegmentBase(BaseModel):
+    """Base schema for recording segment data"""
+    device_id: str
+    segment_file_path: str
+    start_timestamp: datetime
+    end_timestamp: datetime
+    duration_seconds: int
+    file_size_bytes: int
+
+
+class RecordingSegmentCreate(RecordingSegmentBase):
+    """Schema for creating a recording segment"""
+    pass
+
+
+class RecordingSegmentResponse(RecordingSegmentBase):
+    """Schema for recording segment response"""
+    model_config = {"from_attributes": True}
+    
+    id: str
+    created_at: datetime
+    
+    @field_validator('id', mode='before')
+    @classmethod
+    def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingSegmentListResponse(BaseModel):
+    """Schema for recording segment list response"""
+    device_id: str
+    device_name: str
+    segments: List[RecordingSegmentResponse]
+    total_segments: int
+    time_range: Optional[Dict[str, Optional[str]]] = None
+
+
+class RecordingStatusResponse(BaseModel):
+    """Schema for recording status response"""
+    device_id: str
+    device_name: str
+    is_recording: bool
+    device_status: str
+    storage_bytes: int
+    storage_mb: float
+    last_checked: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingTimelineResponse(BaseModel):
+    """Schema for recording timeline response"""
+    device_id: str
+    device_name: str
+    timeline_hours: int
+    time_range: Dict[str, str]
+    segments: List[Dict[str, Any]]
+    total_segments: int
+    is_recording: bool
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingStartResponse(BaseModel):
+    """Schema for recording start response"""
+    message: str
+    device_id: str
+    device_name: Optional[str] = None
+    is_recording: bool
+    started_at: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingStopResponse(BaseModel):
+    """Schema for recording stop response"""
+    message: str
+    device_id: str
+    device_name: Optional[str] = None
+    is_recording: bool
+    stopped_at: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class StorageUsageResponse(BaseModel):
+    """Schema for storage usage response"""
+    total_storage: Dict[str, Any]
+    device_usage: List[Dict[str, Any]]
+    recordings_directory: str
+    last_updated: datetime
+
+
+class StorageUsageDevice(BaseModel):
+    """Schema for device storage usage"""
+    device_id: str
+    device_name: str
+    bytes_used: int
+    mb_used: float
+    gb_used: float
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class StorageUsageTotal(BaseModel):
+    """Schema for total storage usage"""
+    bytes: int
+    mb: float
+    gb: float
+
+
+class CleanupResponse(BaseModel):
+    """Schema for cleanup response"""
+    message: str
+    segments_cleaned: int
+    cleanup_time: datetime
+
+
+class AllRecordingStatusResponse(BaseModel):
+    """Schema for all recording status response"""
+    devices: List[RecordingStatusResponse]
+    total_devices: int
+    recording_devices: int
+    last_updated: datetime
+
+
+class RecordingConfiguration(BaseModel):
+    """Schema for recording configuration"""
+    segment_duration: int = 30  # seconds
+    retention_hours: int = 48  # hours
+    overlap_seconds: int = 3    # seconds
+    quality: Dict[str, Any] = {
+        "bitrate": "1M",
+        "resolution": "1920x1080",
+        "framerate": 30
+    }
+
+
+class RecordingConfigurationUpdate(BaseModel):
+    """Schema for updating recording configuration"""
+    segment_duration: Optional[int] = None
+    retention_hours: Optional[int] = None
+    overlap_seconds: Optional[int] = None
+    quality: Optional[Dict[str, Any]] = None
+
+
 class SnapshotListResponse(BaseModel):
     """Schema for snapshot list response"""
     snapshots: List[SnapshotResponse]
@@ -168,6 +365,203 @@ class SnapshotImageResponse(BaseModel):
         if hasattr(v, '__str__'):
             return str(v)
         return v
+
+
+# Recording Schemas
+class RecordingStatus(str, Enum):
+    """Recording status enumeration"""
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    ERROR = "error"
+    STARTING = "starting"
+    STOPPING = "stopping"
+
+
+class RecordingSegmentBase(BaseModel):
+    """Base schema for recording segment data"""
+    device_id: str
+    segment_file_path: str
+    start_timestamp: datetime
+    end_timestamp: datetime
+    duration_seconds: int
+    file_size_bytes: int
+
+
+class RecordingSegmentCreate(RecordingSegmentBase):
+    """Schema for creating a recording segment"""
+    pass
+
+
+class RecordingSegmentResponse(RecordingSegmentBase):
+    """Schema for recording segment response"""
+    model_config = {"from_attributes": True}
+    
+    id: str
+    created_at: datetime
+    
+    @field_validator('id', mode='before')
+    @classmethod
+    def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingSegmentListResponse(BaseModel):
+    """Schema for recording segment list response"""
+    device_id: str
+    device_name: str
+    segments: List[RecordingSegmentResponse]
+    total_segments: int
+    time_range: Optional[Dict[str, Optional[str]]] = None
+
+
+class RecordingStatusResponse(BaseModel):
+    """Schema for recording status response"""
+    device_id: str
+    device_name: str
+    is_recording: bool
+    device_status: str
+    storage_bytes: int
+    storage_mb: float
+    last_checked: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingTimelineResponse(BaseModel):
+    """Schema for recording timeline response"""
+    device_id: str
+    device_name: str
+    timeline_hours: int
+    time_range: Dict[str, str]
+    segments: List[Dict[str, Any]]
+    total_segments: int
+    is_recording: bool
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingStartResponse(BaseModel):
+    """Schema for recording start response"""
+    message: str
+    device_id: str
+    device_name: Optional[str] = None
+    is_recording: bool
+    started_at: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingStopResponse(BaseModel):
+    """Schema for recording stop response"""
+    message: str
+    device_id: str
+    device_name: Optional[str] = None
+    is_recording: bool
+    stopped_at: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class StorageUsageResponse(BaseModel):
+    """Schema for storage usage response"""
+    total_storage: Dict[str, Any]
+    device_usage: List[Dict[str, Any]]
+    recordings_directory: str
+    last_updated: datetime
+
+
+class StorageUsageDevice(BaseModel):
+    """Schema for device storage usage"""
+    device_id: str
+    device_name: str
+    bytes_used: int
+    mb_used: float
+    gb_used: float
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class StorageUsageTotal(BaseModel):
+    """Schema for total storage usage"""
+    bytes: int
+    mb: float
+    gb: float
+
+
+class CleanupResponse(BaseModel):
+    """Schema for cleanup response"""
+    message: str
+    segments_cleaned: int
+    cleanup_time: datetime
+
+
+class AllRecordingStatusResponse(BaseModel):
+    """Schema for all recording status response"""
+    devices: List[RecordingStatusResponse]
+    total_devices: int
+    recording_devices: int
+    last_updated: datetime
+
+
+class RecordingConfiguration(BaseModel):
+    """Schema for recording configuration"""
+    segment_duration: int = 30  # seconds
+    retention_hours: int = 48  # hours
+    overlap_seconds: int = 3    # seconds
+    quality: Dict[str, Any] = {
+        "bitrate": "1M",
+        "resolution": "1920x1080",
+        "framerate": 30
+    }
+
+
+class RecordingConfigurationUpdate(BaseModel):
+    """Schema for updating recording configuration"""
+    segment_duration: Optional[int] = None
+    retention_hours: Optional[int] = None
+    overlap_seconds: Optional[int] = None
+    quality: Optional[Dict[str, Any]] = None
     
 
 
@@ -323,6 +717,203 @@ class SnapshotResponse(SnapshotBase):
         return v
 
 
+# Recording Schemas
+class RecordingStatus(str, Enum):
+    """Recording status enumeration"""
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    ERROR = "error"
+    STARTING = "starting"
+    STOPPING = "stopping"
+
+
+class RecordingSegmentBase(BaseModel):
+    """Base schema for recording segment data"""
+    device_id: str
+    segment_file_path: str
+    start_timestamp: datetime
+    end_timestamp: datetime
+    duration_seconds: int
+    file_size_bytes: int
+
+
+class RecordingSegmentCreate(RecordingSegmentBase):
+    """Schema for creating a recording segment"""
+    pass
+
+
+class RecordingSegmentResponse(RecordingSegmentBase):
+    """Schema for recording segment response"""
+    model_config = {"from_attributes": True}
+    
+    id: str
+    created_at: datetime
+    
+    @field_validator('id', mode='before')
+    @classmethod
+    def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingSegmentListResponse(BaseModel):
+    """Schema for recording segment list response"""
+    device_id: str
+    device_name: str
+    segments: List[RecordingSegmentResponse]
+    total_segments: int
+    time_range: Optional[Dict[str, Optional[str]]] = None
+
+
+class RecordingStatusResponse(BaseModel):
+    """Schema for recording status response"""
+    device_id: str
+    device_name: str
+    is_recording: bool
+    device_status: str
+    storage_bytes: int
+    storage_mb: float
+    last_checked: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingTimelineResponse(BaseModel):
+    """Schema for recording timeline response"""
+    device_id: str
+    device_name: str
+    timeline_hours: int
+    time_range: Dict[str, str]
+    segments: List[Dict[str, Any]]
+    total_segments: int
+    is_recording: bool
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingStartResponse(BaseModel):
+    """Schema for recording start response"""
+    message: str
+    device_id: str
+    device_name: Optional[str] = None
+    is_recording: bool
+    started_at: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingStopResponse(BaseModel):
+    """Schema for recording stop response"""
+    message: str
+    device_id: str
+    device_name: Optional[str] = None
+    is_recording: bool
+    stopped_at: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class StorageUsageResponse(BaseModel):
+    """Schema for storage usage response"""
+    total_storage: Dict[str, Any]
+    device_usage: List[Dict[str, Any]]
+    recordings_directory: str
+    last_updated: datetime
+
+
+class StorageUsageDevice(BaseModel):
+    """Schema for device storage usage"""
+    device_id: str
+    device_name: str
+    bytes_used: int
+    mb_used: float
+    gb_used: float
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class StorageUsageTotal(BaseModel):
+    """Schema for total storage usage"""
+    bytes: int
+    mb: float
+    gb: float
+
+
+class CleanupResponse(BaseModel):
+    """Schema for cleanup response"""
+    message: str
+    segments_cleaned: int
+    cleanup_time: datetime
+
+
+class AllRecordingStatusResponse(BaseModel):
+    """Schema for all recording status response"""
+    devices: List[RecordingStatusResponse]
+    total_devices: int
+    recording_devices: int
+    last_updated: datetime
+
+
+class RecordingConfiguration(BaseModel):
+    """Schema for recording configuration"""
+    segment_duration: int = 30  # seconds
+    retention_hours: int = 48  # hours
+    overlap_seconds: int = 3    # seconds
+    quality: Dict[str, Any] = {
+        "bitrate": "1M",
+        "resolution": "1920x1080",
+        "framerate": 30
+    }
+
+
+class RecordingConfigurationUpdate(BaseModel):
+    """Schema for updating recording configuration"""
+    segment_duration: Optional[int] = None
+    retention_hours: Optional[int] = None
+    overlap_seconds: Optional[int] = None
+    quality: Optional[Dict[str, Any]] = None
+
+
 class SnapshotListResponse(BaseModel):
     """Schema for snapshot list response"""
     snapshots: List[SnapshotResponse]
@@ -356,4 +947,201 @@ class SnapshotImageResponse(BaseModel):
         """Convert UUID to string if needed."""
         if hasattr(v, '__str__'):
             return str(v)
-        return v 
+        return v
+
+
+# Recording Schemas
+class RecordingStatus(str, Enum):
+    """Recording status enumeration"""
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    ERROR = "error"
+    STARTING = "starting"
+    STOPPING = "stopping"
+
+
+class RecordingSegmentBase(BaseModel):
+    """Base schema for recording segment data"""
+    device_id: str
+    segment_file_path: str
+    start_timestamp: datetime
+    end_timestamp: datetime
+    duration_seconds: int
+    file_size_bytes: int
+
+
+class RecordingSegmentCreate(RecordingSegmentBase):
+    """Schema for creating a recording segment"""
+    pass
+
+
+class RecordingSegmentResponse(RecordingSegmentBase):
+    """Schema for recording segment response"""
+    model_config = {"from_attributes": True}
+    
+    id: str
+    created_at: datetime
+    
+    @field_validator('id', mode='before')
+    @classmethod
+    def validate_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingSegmentListResponse(BaseModel):
+    """Schema for recording segment list response"""
+    device_id: str
+    device_name: str
+    segments: List[RecordingSegmentResponse]
+    total_segments: int
+    time_range: Optional[Dict[str, Optional[str]]] = None
+
+
+class RecordingStatusResponse(BaseModel):
+    """Schema for recording status response"""
+    device_id: str
+    device_name: str
+    is_recording: bool
+    device_status: str
+    storage_bytes: int
+    storage_mb: float
+    last_checked: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingTimelineResponse(BaseModel):
+    """Schema for recording timeline response"""
+    device_id: str
+    device_name: str
+    timeline_hours: int
+    time_range: Dict[str, str]
+    segments: List[Dict[str, Any]]
+    total_segments: int
+    is_recording: bool
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingStartResponse(BaseModel):
+    """Schema for recording start response"""
+    message: str
+    device_id: str
+    device_name: Optional[str] = None
+    is_recording: bool
+    started_at: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class RecordingStopResponse(BaseModel):
+    """Schema for recording stop response"""
+    message: str
+    device_id: str
+    device_name: Optional[str] = None
+    is_recording: bool
+    stopped_at: datetime
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class StorageUsageResponse(BaseModel):
+    """Schema for storage usage response"""
+    total_storage: Dict[str, Any]
+    device_usage: List[Dict[str, Any]]
+    recordings_directory: str
+    last_updated: datetime
+
+
+class StorageUsageDevice(BaseModel):
+    """Schema for device storage usage"""
+    device_id: str
+    device_name: str
+    bytes_used: int
+    mb_used: float
+    gb_used: float
+    
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def validate_device_id(cls, v):
+        """Convert UUID to string if needed."""
+        if hasattr(v, '__str__'):
+            return str(v)
+        return v
+
+
+class StorageUsageTotal(BaseModel):
+    """Schema for total storage usage"""
+    bytes: int
+    mb: float
+    gb: float
+
+
+class CleanupResponse(BaseModel):
+    """Schema for cleanup response"""
+    message: str
+    segments_cleaned: int
+    cleanup_time: datetime
+
+
+class AllRecordingStatusResponse(BaseModel):
+    """Schema for all recording status response"""
+    devices: List[RecordingStatusResponse]
+    total_devices: int
+    recording_devices: int
+    last_updated: datetime
+
+
+class RecordingConfiguration(BaseModel):
+    """Schema for recording configuration"""
+    segment_duration: int = 30  # seconds
+    retention_hours: int = 48  # hours
+    overlap_seconds: int = 3    # seconds
+    quality: Dict[str, Any] = {
+        "bitrate": "1M",
+        "resolution": "1920x1080",
+        "framerate": 30
+    }
+
+
+class RecordingConfigurationUpdate(BaseModel):
+    """Schema for updating recording configuration"""
+    segment_duration: Optional[int] = None
+    retention_hours: Optional[int] = None
+    overlap_seconds: Optional[int] = None
+    quality: Optional[Dict[str, Any]] = None 

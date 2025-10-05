@@ -209,4 +209,54 @@ export interface FilterOptions {
 export interface SortOptions {
   field: string;
   direction: 'asc' | 'desc';
+}
+
+// Recording Types
+export interface RecordingSegment {
+  id: string;
+  device_id: string;
+  segment_file_path: string;
+  start_timestamp: string;
+  end_timestamp: string;
+  duration_seconds: number;
+  file_size_bytes: number;
+  created_at: string;
+}
+
+export interface RecordingTimeline {
+  device_id: string;
+  device_name: string;
+  timeline_hours: number;
+  time_range: {
+    start: string;
+    end: string;
+  };
+  segments: RecordingSegment[];
+  total_segments: number;
+  is_recording: boolean;
+}
+
+export interface RecordingStatus {
+  device_id: string;
+  device_name: string;
+  is_recording: boolean;
+  device_status: string;
+  storage_bytes: number;
+  storage_mb: number;
+  last_checked: string;
+}
+
+export interface TimelinePosition {
+  timestamp: string;
+  segment?: RecordingSegment;
+  isLive: boolean;
+}
+
+export interface TimelineScrubberProps {
+  deviceId: string;
+  deviceName: string;
+  onSeek: (position: TimelinePosition) => void;
+  currentPosition?: TimelinePosition;
+  isLive?: boolean;
+  className?: string;
 } 
