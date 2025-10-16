@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, LargeBinary, ForeignKey
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, LargeBinary, ForeignKey, BigInteger
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -106,5 +106,65 @@ class Snapshot(Base):
             "file_size": self.file_size,
             "captured_at": self.captured_at.isoformat() if self.captured_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class RecordingSegment(Base):
+    __tablename__ = "recording_segments"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    device_id = Column(UUID(as_uuid=True), ForeignKey('devices.id', ondelete='CASCADE'), nullable=False)
+    segment_file_path = Column(String(500), nullable=False)
+    start_timestamp = Column(DateTime, nullable=False)
+    end_timestamp = Column(DateTime, nullable=False)
+    duration_seconds = Column(Integer, nullable=False)
+    file_size_bytes = Column(BigInteger, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship to Device
+    device = relationship("Device", backref="recording_segments")
+    
+    def __repr__(self):
+        return f"<RecordingSegment(id={self.id}, device_id={self.device_id}, start={self.start_timestamp})>"
+    
+    def to_dict(self):
+        """Convert recording segment to dictionary for API responses."""
+        return {
+            "id": str(self.id),
+            "device_id": str(self.device_id),
+            "segment_file_path": self.segment_file_path,
+            "start_timestamp": self.start_timestamp.isoformat() if self.start_timestamp else None,
+            "end_timestamp": self.end_timestamp.isoformat() if self.end_timestamp else None,
+            "duration_seconds": self.duration_seconds,
+            "file_size_bytes": self.file_size_bytes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class RecordingStatus(Base):
+    __tablename__ = "recording_status"
+    
+    device_id = Column(UUID(as_uuid=True), ForeignKey('devices.id', ondelete='CASCADE'), primary_key=True)
+    is_recording = Column(Boolean, nullable=False, default=False)
+    last_segment_timestamp = Column(DateTime, nullable=True)
+    total_segments = Column(Integer, nullable=False, default=0)
+    total_size_bytes = Column(BigInteger, nullable=False, default=0)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship to Device
+    device = relationship("Device", backref="recording_status")
+    
+    def __repr__(self):
+        return f"<RecordingStatus(device_id={self.device_id}, is_recording={self.is_recording})>"
+    
+    def to_dict(self):
+        """Convert recording status to dictionary for API responses."""
+        return {
+            "device_id": str(self.device_id),
+            "is_recording": self.is_recording,
+            "last_segment_timestamp": self.last_segment_timestamp.isoformat() if self.last_segment_timestamp else None,
+            "total_segments": self.total_segments,
+            "total_size_bytes": self.total_size_bytes,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         } 

@@ -30,6 +30,7 @@ import {
   Stream,
   HealthAndSafety,
   PhotoCamera,
+  Timeline,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -45,6 +46,7 @@ const menuItems = [
   { text: 'Devices', icon: <Devices />, path: '/devices' },
   { text: 'Streams', icon: <Stream />, path: '/streams' },
   { text: 'Snapshots', icon: <PhotoCamera />, path: '/snapshots' },
+  { text: 'Timeline Demo', icon: <Timeline />, path: '/timeline-demo' },
   { text: 'Discovery', icon: <Search />, path: '/discovery' },
   { text: 'Health', icon: <HealthAndSafety />, path: '/health' },
   { text: 'Settings', icon: <Settings />, path: '/settings' },

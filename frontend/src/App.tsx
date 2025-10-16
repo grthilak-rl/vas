@@ -11,6 +11,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Devices } from './pages/Devices';
 import { Streams } from './pages/Streams';
 import { Snapshots } from './pages/Snapshots';
+import TimelineScrubberDemo from './pages/TimelineScrubberDemo';
 
 // Create a theme instance
 const theme = createTheme({
@@ -54,7 +55,7 @@ const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route 
           path="/login" 
@@ -96,6 +97,16 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Layout>
                 <Snapshots />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timeline-demo"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <TimelineScrubberDemo />
               </Layout>
             </ProtectedRoute>
           }

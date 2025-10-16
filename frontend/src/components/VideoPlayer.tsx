@@ -17,10 +17,13 @@ import {
   Videocam,
   Error,
   CameraAlt,
+  Timeline,
 } from '@mui/icons-material';
 import './VideoPlayer.css';
 import { useMutation } from '@tanstack/react-query';
 import apiService from '../services/api';
+import { TimelineScrubber } from './TimelineScrubber';
+import { TimelinePosition } from '../types';
 
 // Declare global Janus types
 declare global {
@@ -54,8 +57,73 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [streaming, setStreaming] = useState<any>(null);
   const [snapshotSuccess, setSnapshotSuccess] = useState(false);
   const [snapshotError, setSnapshotError] = useState<string | null>(null);
+  
+  // Live DVR state
+  const [isLiveDVRMode, setIsLiveDVRMode] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [currentTimelinePosition, setCurrentTimelinePosition] = useState<TimelinePosition | undefined>();
+  const [isLiveMode, setIsLiveMode] = useState(true);
   const [fps, setFps] = useState<number | null>(null);
   const fpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Live DVR handlers
+  const handleTimelineSeek = (position: TimelinePosition) => {
+    console.log('Timeline seek triggered:', position);
+    setCurrentTimelinePosition(position);
+    setIsLiveMode(position.isLive);
+    
+    if (position.isLive) {
+      // Switch back to live stream
+      console.log('Switching to live stream');
+      if (!isPlaying) {
+        handleStartStream();
+      }
+    } else {
+      // Switch to recorded playback
+      if (position.segment) {
+        console.log('Switching to recorded segment:', position.segment);
+        
+        // Stop current stream first
+        if (streaming) {
+          console.log('Stopping current stream before switching to recorded playback');
+          // Janus doesn't have destroy(), use detach() instead
+          if (streaming.detach) {
+            streaming.detach();
+          }
+          setStreaming(null);
+        }
+        
+        // Update video source to the recorded segment
+        if (videoRef.current) {
+          // The playback_url from API already includes /api/ prefix
+          const playbackUrl = position.segment.playback_url;
+          console.log('Setting video source to:', playbackUrl);
+          
+          // Clear current source
+          videoRef.current.srcObject = null;
+          
+          // Set new source and play immediately
+          videoRef.current.src = playbackUrl;
+          
+          // Play the recorded segment without calling load() separately
+          videoRef.current.play().then(() => {
+            console.log('Recorded segment playback started successfully');
+            setIsPlaying(true);
+            setStreamStatus('playing');
+          }).catch(error => {
+            console.error('Error playing recorded segment:', error);
+            setError(`Failed to play recorded segment: ${error.message}`);
+            setStreamStatus('error');
+          });
+        }
+      }
+    }
+  };
+
+  const handleToggleLiveDVR = () => {
+    setIsLiveDVRMode(!isLiveDVRMode);
+    setShowTimeline(!showTimeline);
+  };
 
   // Snapshot capture mutation
   const captureSnapshotMutation = useMutation({
@@ -160,7 +228,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
         
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsHost = window.location.host;
+        const wsHost = process.env.NODE_ENV === 'development' 
+          ? (process.env.REACT_APP_SERVER_IP || window.location.hostname)  // Use env var or current host for dev
+          : window.location.host;  // Use current host for production
         
         window.Janus.init({
           debug: "all",
@@ -211,11 +281,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       // Get WebSocket URL components
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsHost = window.location.host;
+      // Use env var or current host for dev, current host for production
+      const wsHost = process.env.NODE_ENV === 'development' 
+        ? (process.env.REACT_APP_SERVER_IP || window.location.hostname)  // Use env var or current host for dev
+        : window.location.host;  // Use current host for production
+      const wsPath = '/janus-ws';
 
-      // Connect to Janus WebSocket via Nginx proxy
+      // Connect to Janus WebSocket
       const janusInstance = new window.Janus({
-        server: `${wsProtocol}//${wsHost}/janus-ws`,
+        server: `${wsProtocol}//${wsHost}${wsPath}`,
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        withCredentials: false,
         success: function() {
           console.log("Connected to Janus WebSocket");
           
@@ -428,7 +504,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </Box>
 
         {/* Video Container */}
-        <Box className="video-player-video-container">
+        <Box className="video-player-video-container" sx={{ position: 'relative' }}>
           {isLoading && (
             <Box className="video-player-placeholder">
               <CircularProgress />
@@ -466,6 +542,35 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             muted
             playsInline
           />
+
+          {/* TimelineScrubber Overlay */}
+          {isPlaying && showTimeline && (
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 8,
+                left: 8,
+                right: 8,
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                backdropFilter: 'blur(4px)',
+                borderRadius: 8,
+                zIndex: 10,
+                maxHeight: '160px',
+                overflow: 'visible'
+              }}
+            >
+              <Box sx={{ p: 1.5 }}>
+                <TimelineScrubber
+                  deviceId={deviceId}
+                  deviceName={deviceName}
+                  onSeek={handleTimelineSeek}
+                  currentPosition={currentTimelinePosition}
+                  isLive={isLiveMode}
+                  compact={true}
+                />
+              </Box>
+            </Box>
+          )}
         </Box>
 
         {/* Controls */}
@@ -510,9 +615,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               >
                 {captureSnapshotMutation.isPending ? 'Capturing...' : 'Snapshot'}
               </Button>
+
+              <Button
+                variant="outlined"
+                startIcon={<Timeline />}
+                onClick={handleToggleLiveDVR}
+                className="video-player-button video-player-button-timeline"
+                color={isLiveDVRMode ? "primary" : "inherit"}
+              >
+                Live DVR
+              </Button>
             </>
           )}
         </Box>
+
 
         {error && (
           <Alert severity="error" sx={{ mt: 2 }}>
