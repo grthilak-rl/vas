@@ -11,6 +11,7 @@ from app.database import engine, Base
 from app.api import auth, devices, discovery, streams, snapshots, recordings
 from app.api.dependencies import get_current_user
 from app.services.validation import validation_service
+from app.services.live_dvr_service import LiveDVRService, live_dvr_service as global_live_dvr_service
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG if settings.debug else logging.INFO)
@@ -43,11 +44,26 @@ app.include_router(snapshots.router, prefix=settings.api_v1_prefix)
 app.include_router(recordings.router, prefix=settings.api_v1_prefix)
 
 
+# Global LiveDVR service instance
+live_dvr_service = None
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup."""
+    global live_dvr_service
+    
     # Create database tables
     Base.metadata.create_all(bind=engine)
+    
+    # Initialize LiveDVR service
+    try:
+        live_dvr_service = LiveDVRService()
+        # Set the global variable in the live_dvr_service module
+        import app.services.live_dvr_service as live_dvr_module
+        live_dvr_module.live_dvr_service = live_dvr_service
+        logger.info("✅ LiveDVR service initialized successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize LiveDVR service: {e}")
     
     print(f"🚀 {settings.project_name} v{settings.version} started")
 
@@ -55,6 +71,16 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on application shutdown."""
+    global live_dvr_service
+    
+    # Shutdown LiveDVR service
+    if live_dvr_service:
+        try:
+            del live_dvr_service
+            logger.info("✅ LiveDVR service shutdown successfully")
+        except Exception as e:
+            logger.error(f"❌ Error shutting down LiveDVR service: {e}")
+    
     print("🛑 Application shutting down")
 
 

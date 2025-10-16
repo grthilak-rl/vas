@@ -216,11 +216,13 @@ export interface RecordingSegment {
   id: string;
   device_id: string;
   segment_file_path: string;
-  start_timestamp: string;
-  end_timestamp: string;
+  start_time: string;
+  end_time: string;
   duration_seconds: number;
   file_size_bytes: number;
+  file_size_mb: number;
   created_at: string;
+  playback_url: string;
 }
 
 export interface RecordingTimeline {
@@ -228,8 +230,8 @@ export interface RecordingTimeline {
   device_name: string;
   timeline_hours: number;
   time_range: {
-    start: string;
-    end: string;
+    start_time: string;
+    end_time: string;
   };
   segments: RecordingSegment[];
   total_segments: number;
@@ -259,4 +261,5 @@ export interface TimelineScrubberProps {
   currentPosition?: TimelinePosition;
   isLive?: boolean;
   className?: string;
+  compact?: boolean;
 } 

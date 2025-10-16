@@ -32,6 +32,7 @@ class LiveDVRService:
         self.ffmpeg_path = self._find_ffmpeg()
         self.recording_processes: Dict[str, subprocess.Popen] = {}
         self.recording_status: Dict[str, bool] = {}
+        self.monitoring_tasks: Dict[str, asyncio.Task] = {}
         self.recording_config = {
             'segment_duration': 30,  # seconds
             'retention_hours': 48,   # hours
@@ -125,12 +126,23 @@ class LiveDVRService:
             device_dir = self._get_device_recording_dir(device_id)
             
             # Build FFmpeg command for continuous recording
-            output_pattern = str(device_dir / f"{device_id}_%Y%m%d_%H%M%S.mp4")
+            output_pattern = str(device_dir / f"{device_id}_%03d.mp4")
             
-            cmd = [
-                self.ffmpeg_path,
-                '-rtsp_transport', 'tcp',
-                '-i', device.rtsp_url,
+            # Build FFmpeg command
+            cmd = [self.ffmpeg_path]
+            
+            # Add input-specific options
+            if device.rtsp_url.startswith('rtsp://'):
+                cmd.extend(['-rtsp_transport', 'tcp', '-i', device.rtsp_url])
+            elif device.rtsp_url.startswith('file://'):
+                # For local files, remove file:// prefix
+                input_path = device.rtsp_url.replace('file://', '')
+                cmd.extend(['-i', input_path])
+            else:
+                cmd.extend(['-i', device.rtsp_url])
+            
+            # Add encoding options
+            cmd.extend([
                 '-c:v', 'libx264',
                 '-preset', 'fast',
                 '-crf', '23',
@@ -144,9 +156,13 @@ class LiveDVRService:
                 '-avoid_negative_ts', 'make_zero',
                 '-y',  # Overwrite output files
                 output_pattern
-            ]
+            ])
             
-            logger.info(f"Starting recording for device {device_id} with command: {' '.join(cmd).replace(device.password, '********')}")
+            # Log command with password masked
+            cmd_str = ' '.join(cmd)
+            if device.password:
+                cmd_str = cmd_str.replace(device.password, '********')
+            logger.info(f"Starting recording for device {device_id} with command: {cmd_str}")
             
             # Start FFmpeg process
             process = subprocess.Popen(
@@ -166,7 +182,8 @@ class LiveDVRService:
             logger.info(f"Recording started successfully for device {device_id} (PID: {process.pid})")
             
             # Start background task to monitor the process
-            asyncio.create_task(self._monitor_recording_process(device_id, process))
+            task = asyncio.create_task(self._monitor_recording_process(device_id, process))
+            self.monitoring_tasks[device_id] = task
             
             return True
             
@@ -227,8 +244,14 @@ class LiveDVRService:
     async def _monitor_recording_process(self, device_id: str, process: subprocess.Popen):
         """Monitor a recording process and restart if needed"""
         try:
+            recording_dir = f"/app/recordings/{device_id}"
+            known_files = set()
+            
             while process.poll() is None:
                 await asyncio.sleep(5)  # Check every 5 seconds
+                
+                # Check for new segment files
+                await self._detect_new_segments(device_id, recording_dir, known_files)
                 
                 # Check if process is still running
                 if process.poll() is not None:
@@ -251,6 +274,89 @@ class LiveDVRService:
             
         except Exception as e:
             logger.error(f"Error monitoring recording process for device {device_id}: {e}", exc_info=True)
+    
+    async def _detect_new_segments(self, device_id: str, recording_dir: str, known_files: set):
+        """Detect new segment files and add them to database"""
+        try:
+            import os
+            import glob
+            from datetime import datetime
+            
+            # Get all MP4 files in the recording directory
+            pattern = os.path.join(recording_dir, "*.mp4")
+            current_files = set(glob.glob(pattern))
+            
+            # Find new files
+            new_files = current_files - known_files
+            
+            if new_files:
+                logger.info(f"Found {len(new_files)} new segment files for device {device_id}")
+                
+                # Add new files to database
+                db = next(get_db())
+                try:
+                    for file_path in new_files:
+                        await self._add_segment_to_database(device_id, file_path, db)
+                    db.commit()
+                finally:
+                    db.close()
+                
+                # Update known files
+                known_files.update(new_files)
+                
+        except Exception as e:
+            logger.error(f"Error detecting new segments for device {device_id}: {e}", exc_info=True)
+    
+    async def _add_segment_to_database(self, device_id: str, file_path: str, db: Session):
+        """Add a segment file to the database"""
+        try:
+            import os
+            from datetime import datetime
+            
+            # Get file stats
+            stat = os.stat(file_path)
+            file_size = stat.st_size
+            created_at = datetime.fromtimestamp(stat.st_ctime)
+            
+            # Extract timestamp from filename (format: device_id_YYYYMMDD_HHMMSS.mp4)
+            filename = os.path.basename(file_path)
+            try:
+                # Parse timestamp from filename
+                timestamp_part = filename.replace(f"{device_id}_", "").replace(".mp4", "")
+                if "_" in timestamp_part:
+                    date_part, time_part = timestamp_part.split("_")
+                    start_timestamp = datetime.strptime(f"{date_part}_{time_part}", "%Y%m%d_%H%M%S")
+                else:
+                    start_timestamp = created_at
+            except:
+                start_timestamp = created_at
+            
+            # Estimate end timestamp (30 seconds duration)
+            end_timestamp = start_timestamp.replace(second=start_timestamp.second + 30)
+            
+            # Insert segment into database
+            from sqlalchemy import text
+            
+            db.execute(text("""
+                INSERT INTO recording_segments 
+                (device_id, segment_file_path, start_timestamp, end_timestamp, 
+                 duration_seconds, file_size_bytes, created_at)
+                VALUES (:device_id, :file_path, :start_timestamp, :end_timestamp,
+                        :duration_seconds, :file_size, :created_at)
+            """), {
+                'device_id': device_id,
+                'file_path': file_path,
+                'start_timestamp': start_timestamp,
+                'end_timestamp': end_timestamp,
+                'duration_seconds': 30,
+                'file_size': file_size,
+                'created_at': created_at
+            })
+            
+            logger.info(f"Added segment to database: {filename}")
+            
+        except Exception as e:
+            logger.error(f"Error adding segment to database: {e}", exc_info=True)
     
     async def _update_recording_status(self, device_id: str, is_recording: bool, db: Session):
         """Update recording status in database"""
@@ -660,5 +766,12 @@ class LiveDVRService:
             self._executor.shutdown(wait=False)
 
 
-# Global instance
-live_dvr_service = LiveDVRService()
+# Global instance - will be initialized by main.py
+live_dvr_service = None
+
+def get_live_dvr_service() -> 'LiveDVRService':
+    """Get the global LiveDVR service instance"""
+    global live_dvr_service
+    if live_dvr_service is None:
+        raise RuntimeError("LiveDVR service not initialized. Make sure the application has started properly.")
+    return live_dvr_service

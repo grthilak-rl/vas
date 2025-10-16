@@ -115,6 +115,22 @@
   background-color: rgba(156, 39, 176, 0.04) !important;
 }
 
+.video-player-button-timeline {
+  background-color: transparent !important;
+  color: #ff9800 !important;
+  border: 1px solid #ff9800 !important;
+}
+
+.video-player-button-timeline:hover {
+  background-color: rgba(255, 152, 0, 0.04) !important;
+}
+
+.video-player-button-timeline.MuiButton-colorPrimary {
+  background-color: rgba(255, 152, 0, 0.1) !important;
+  color: #ff9800 !important;
+  border: 1px solid #ff9800 !important;
+}
+
 .video-player-button:disabled {
   opacity: 0.6 !important;
   cursor: not-allowed !important;

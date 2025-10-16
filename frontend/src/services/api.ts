@@ -23,8 +23,12 @@ class ApiService {
 
   constructor() {
     // Use full URL to backend for development, relative URL for production
+    const devApiUrl = process.env.REACT_APP_SERVER_IP 
+      ? `http://${process.env.REACT_APP_SERVER_IP}:8000/api`
+      : `http://${window.location.hostname}:8000/api`;
+    
     this.baseURL = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:8000/api' 
+      ? devApiUrl
       : (process.env.REACT_APP_API_URL || '/api');
     this.api = axios.create({
       baseURL: this.baseURL,

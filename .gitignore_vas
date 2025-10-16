@@ -58,6 +58,10 @@ coverage.xml
 .env.local
 .env.production
 
+# BUT allow example/template files to be committed
+!.env.example
+!env.example
+
 # OS
 .DS_Store
 Thumbs.db
